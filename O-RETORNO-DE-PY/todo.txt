@@ -1,0 +1,3 @@
+pra continuar testando a implementação da estratégia, agora eu tenho que
+>fazer plots melhores (usando o bokeh) e checar se o programa tá perdendo alguma trade
+>>pra isso seria bom fazer os plots e colocar uma seta de entry e uma seta de exit em cada trade q o programa faz
