@@ -1,0 +1,53 @@
+(0) comprou a 53414.09 em 2021-03-26 14:30:00.
+(0) vendeu a 55025.59 em 2021-03-26 23:30:00. Diferença absoluta de: 1611.5; Diferença percentual: 3.0169942050870846%. Tempo de resolução: 0 days 09:00:00.
+
+(1) comprou a 54875.71 em 2021-03-27 05:00:00.
+(1) STOP-LOSS: Vendeu a 54143.44 em 2021-03-27 12:00:00. Diferença absoluta de: -732.2699999999968; Diferença percentual: -1.3344155364914583%. Tempo de resolução: 0 days 07:00:00.
+
+(2) comprou a 54291.28 em 2021-03-27 12:30:00.
+(2) vendeu a 55728.93 em 2021-03-27 18:30:00. Diferença absoluta de: 1437.6500000000015; Diferença percentual: 2.648031138702203%. Tempo de resolução: 0 days 06:00:00.
+
+(3) comprou a 55804.92 em 2021-03-28 02:30:00.
+(3) STOP-LOSS: Vendeu a 55192.08 em 2021-03-28 18:30:00. Diferença absoluta de: -612.8399999999965; Diferença percentual: -1.0981827408766047%. Tempo de resolução: 0 days 16:00:00.
+
+(4) comprou a 55014.89 em 2021-03-28 21:00:00.
+(4) vendeu a 57922.2 em 2021-03-29 09:30:00. Diferença absoluta de: 2907.3099999999977; Diferença percentual: 5.284587499856853%. Tempo de resolução: 0 days 12:30:00.
+
+(5) comprou a 57843.0 em 2021-03-29 18:00:00.
+(5) STOP-LOSS: Vendeu a 57241.22 em 2021-03-30 03:00:00. Diferença absoluta de: -601.7799999999988; Diferença percentual: -1.0403678923983868%. Tempo de resolução: 0 days 09:00:00.
+
+(6) comprou a 57181.33 em 2021-03-30 03:30:00.
+(6) vendeu a 58873.91 em 2021-03-30 09:30:00. Diferença absoluta de: 1692.5800000000017; Diferença percentual: 2.9600220911265995%. Tempo de resolução: 0 days 06:00:00.
+
+(7) comprou a 58995.83 em 2021-03-30 18:00:00.
+(7) STOP-LOSS: Vendeu a 58173.83 em 2021-03-31 07:30:00. Diferença absoluta de: -822.0; Diferença percentual: -1.3933188159230914%. Tempo de resolução: 0 days 13:30:00.
+
+(8) comprou a 57718.44 em 2021-03-31 10:30:00.
+(8) vendeu a 59329.44 em 2021-03-31 16:00:00. Diferença absoluta de: 1611.0; Diferença percentual: 2.791135727161025%. Tempo de resolução: 0 days 05:30:00.
+
+(9) comprou a 58740.55 em 2021-03-31 23:30:00.
+(9) STOP-LOSS: Vendeu a 58054.15 em 2021-04-03 20:30:00. Diferença absoluta de: -686.4000000000015; Diferença percentual: -1.16852838456569%. Tempo de resolução: 2 days 21:00:00.
+
+(10) comprou a 58064.88 em 2021-04-03 21:00:00.
+(10) STOP-LOSS: Vendeu a 57394.79 em 2021-04-03 22:00:00. Diferença absoluta de: -670.0899999999965; Diferença percentual: -1.1540366569258327%. Tempo de resolução: 0 days 01:00:00.
+
+(11) comprou a 57556.75 em 2021-04-03 22:30:00.
+(11) STOP-LOSS: Vendeu a 56600.0 em 2021-04-04 00:30:00. Diferença absoluta de: -956.75; Diferença percentual: -1.6622724528400232%. Tempo de resolução: 0 days 02:00:00.
+
+(12) comprou a 56977.76 em 2021-04-04 01:00:00.
+(12) vendeu a 58636.6 em 2021-04-05 14:00:00. Diferença absoluta de: 1658.8399999999965; Diferença percentual: 2.911381563613586%. Tempo de resolução: 1 days 13:00:00.
+
+(13) comprou a 59129.99 em 2021-04-05 23:30:00.
+(13) STOP-LOSS: Vendeu a 58487.37 em 2021-04-06 08:30:00. Diferença absoluta de: -642.6199999999953; Diferença percentual: -1.0867919984427452%. Tempo de resolução: 0 days 09:00:00.
+
+(14) comprou a 58570.89 em 2021-04-06 09:00:00.
+(14) STOP-LOSS: Vendeu a 57700.87 em 2021-04-06 14:00:00. Diferença absoluta de: -870.0199999999968; Diferença percentual: -1.485413658559733%. Tempo de resolução: 0 days 05:00:00.
+
+(15) comprou a 57949.27 em 2021-04-06 14:30:00.
+(15) STOP-LOSS: Vendeu a 57352.23 em 2021-04-07 04:00:00. Diferença absoluta de: -597.0399999999936; Diferença percentual: -1.0302804504698568%. Tempo de resolução: 0 days 13:30:00.
+
+(16) comprou a 56120.01 em 2021-04-07 12:00:00.
+(16) vendeu a 57768.13 em 2021-04-08 15:30:00. Diferença absoluta de: 1648.1199999999953; Diferença percentual: 2.9367778088421495%. Tempo de resolução: 1 days 03:30:00.
+
+(17) comprou a 57879.6 em 2021-04-08 23:00:00.
+Lucro percentual total: 10.095321446896081
