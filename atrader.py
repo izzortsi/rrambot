@@ -11,8 +11,8 @@ from grabber import *
 
 #parametros
 
-KEY = "XQbT3UoAVCqSr72ivWA2gBnDHAaGuNfaYdfduBMCW3VxHol4rmOCF2w8M3vr0u37"
-SECRET = "iJ05eftlARzIcR9CHYKU81qkM21MIgvgmk5pZNvJWYLdYUgB6cS9bRLjwqBVXrQ9"
+KEY = ""
+SECRET = ""
 symbol="ETHUSDT"
 tframe="30m"
 fromdate="1 day ago"

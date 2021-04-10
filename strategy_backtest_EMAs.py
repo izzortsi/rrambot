@@ -6,8 +6,8 @@ import numpy as np
 
 #parametros
 
-API_KEY = "XQbT3UoAVCqSr72ivWA2gBnDHAaGuNfaYdfduBMCW3VxHol4rmOCF2w8M3vr0u37"
-API_SECRET = "iJ05eftlARzIcR9CHYKU81qkM21MIgvgmk5pZNvJWYLdYUgB6cS9bRLjwqBVXrQ9"
+API_KEY = ""
+API_SECRET = ""
 symbol="BTCUSDT"
 tframe="5m"
 fromdate="10 day ago"
@@ -53,7 +53,7 @@ df = grab.compute_indicators(symbol=symbol, tframe=tframe, fromdate=fromdate, to
 ##
 class Backtester:
 
-    def __init__(self, client, df, E, X, stoploss_check):
+    def __init__(self, client, df, E, X, stoploss_check, period):
         self.client = client
         self.df = df
         self.E = E
@@ -64,7 +64,7 @@ class Backtester:
         self.profits = []
         self.Entry = [None, None]
         self.eXit = [None, None]
-        self.period = 15
+        self.period = period
         self.stoploss = None
 
     def strategy(self, i, dates, prices, indicators):
@@ -94,7 +94,7 @@ class Backtester:
 
             self.Entry = [time, price]
             self.stoploss = price - indicators.ema50.iloc[i]
-            
+            print("Stoploss: ", self.stoploss)
             print(f"comprou a {price} em {time}")
 
             self.S = not(self.S)
@@ -177,10 +177,10 @@ def E(i, prices, indicators, period):
 
 
 def stoploss_check(i, stoploss, buy_price, prices, indicators):
-    return prices.iloc[i] - buy_price <= -stoploss
+    return prices.iloc[i] <= indicators.ema50.iloc[i]
 
 def X(i, stoploss, buy_price, prices, indicators):
-    if prices.iloc[i] - buy_price >= 1.5*stoploss:
+    if prices.iloc[i] - buy_price >= 1.5*(prices.iloc[i] - indicators.ema50.iloc[i]):
         return True
     else:
         return False
@@ -194,38 +194,10 @@ def X(i, stoploss, buy_price, prices, indicators):
 
 ##
 
-backtester = Backtester(client, df, E, X, stoploss_check)
+backtester = Backtester(client, df, E, X, stoploss_check, 18)
 total_profit = backtester.backtest()
 
-##
-dfplot = pd.concat([ema50.iloc[150:400], ema100.iloc[150:400], ema25.iloc[150:400], df.close.iloc[150:400]], axis=1)
-##
-dfplot
-##
-dfplot.plot(color=["b", "r", "g", "k"])
-##
 
 ##
-ema25 = df.ema25
-ema50 = df.ema50
-ema100 = df.ema100
-prices = df.close
-i=200
-period = 25
-##
-ema25.index[0]
-##
-##
-for (i, (price, ema2)) in enumerate(zip(prices, ema25)):
-    if price > ema2: print(i)
 
-##
-for (i, (ema1, ema2)) in enumerate(zip(ema25, ema50)):
-    if ema1 > ema2: print(i)
-#np.alltrue(ema25.iloc[:i].head(period) > ema50.iloc[:i].head(period))
-
-##
-ema25.iloc[:i].tail(period)
-##
-10 > 1.5*None
 ##
