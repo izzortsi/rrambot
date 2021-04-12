@@ -94,7 +94,7 @@ class Looker:
         #ciline = fig.line('date', 'cinf', source= source, color='red', line_alpha=0.8, line_dash = "dashed", name='ci')
         
         select = figure(title="Drag the middle and edges of the selection box to change the range above",
-                        plot_height=100, plot_width=950, y_range=fig.y_range,
+                        plot_height=100, plot_width=950, #y_range=fig.y_range,
                         x_axis_type="datetime", y_axis_type=None,
                         tools="", toolbar_location=None, background_fill_color="#efefef")
         
@@ -152,7 +152,7 @@ class Looker:
                 fig.add_layout(citation)
 
         p = column(fig, subfig, select)                   
-        show(p)
+        #show(p)
         return p
 ##
 #looker = Looker(df)

@@ -14,8 +14,12 @@ symbol="BTCUSDT"
 tframe="15m"
 fromdate="1 month ago"
 todate = "5 day ago"
-stoploss_parameter = -2.0
-take_profit = 10.0
+stoploss_parameter = -1.0
+take_profit = 2.5
+n1=4
+n2=4
+e1 = 20
+e2 = 20
 ##
 
 ##
@@ -174,8 +178,21 @@ def E(i, prices, indicators, period):
     histogram = indicators["histogram"]
     signal = indicators["signal"]
 
-    if np.alltrue(histogram.iloc[:i].tail(period) < 0):
-        return True
+    if (np.alltrue(histogram.iloc[:i].tail(period) < 0)):
+        difs = []
+        for h in histogram.iloc[:i].tail(period):
+            absdif = abs(histogram.iloc[i] - h)
+            difs.append(absdif)
+        check = True
+        for i, dif in enumerate(difs[1:]):
+            if dif > difs[i]:
+                check = False
+        if check:
+            global e1
+            if (difs[-1] < e1):
+                return True
+            else:
+                return False
     else:
         return False
     
@@ -195,6 +212,21 @@ def X(i, stoploss, buy_price, prices, indicators, period):
         ((prices.iloc[i]/buy_price - 1)*100 >= take_profit) and #pelo menos `take_profit` de lucro
         (np.alltrue(histogram.iloc[:i].tail(period) > 0))
         ):
+
+        difs = []
+        for h in histogram.iloc[:i].tail(period):
+            absdif = abs(histogram.iloc[i] - h)
+            difs.append(absdif)
+        check = True
+        for i, dif in enumerate(difs[1:]):
+            if dif > difs[i]:
+                check = False
+        if check:
+            global e2
+            if (difs[-1] < e2):
+                return True
+            else:
+                return False
         return True
     else:
         return False
@@ -205,7 +237,7 @@ def X(i, stoploss, buy_price, prices, indicators, period):
 
 
 ##
-backtester = Backtester(client, df, E, X, stoploss_check, 9, 3)
+backtester = Backtester(client, df, E, X, stoploss_check, n1, n2)
 total_profit, trades = backtester.backtest()
 ##
 
