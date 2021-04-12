@@ -76,7 +76,7 @@ def look(df):
     fig = figure(x_axis_type="datetime", title=f'{symbol}, {tframe}, {fromdate}',
                 plot_width=950, plot_height=600,
                 tools=['crosshair', 'pan', 'box_zoom', 'wheel_zoom', 'save', 'reset', hover],
-                x_range=(c.index[40], c.index[75])
+                x_range=(c.index[40], c.index[71])
                 )
 
     cline = fig.line('date', 'close', source= source, color='black', name='cprices')
@@ -107,4 +107,6 @@ def look(df):
 ##
 fig, select = look(df)
 show(column(fig, select))
+##
+
 ##

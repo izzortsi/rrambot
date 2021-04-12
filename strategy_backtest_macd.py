@@ -2,6 +2,8 @@
 from binance.client import Client
 from grabber import *
 import numpy as np
+from bokeh.io import output_file, show
+import pandas as pd
 ##
 
 #parametros
@@ -10,42 +12,15 @@ API_KEY = ""
 API_SECRET = ""
 symbol="BTCUSDT"
 tframe="30m"
-fromdate="15 day ago"
-todate = None
+fromdate="3 month ago"
+todate = "15 day ago"
 ##
 
 ##
 ##
 replaced_fromdate = fromdate.replace(" ", "-")
 nowdate = lambda: "Now" if todate == None else todate.replace(" ", "-")
-
-##
 filename = f"{symbol}_{tframe}_from={replaced_fromdate}_to={nowdate()}.txt"
-##
-filename
-##
-class GrabberMACD(Grabber):
-
-    def compute_indicators(self, symbol="BTCUSDT", tframe="30m", fromdate="1 day ago", todate = None, indicators=[]):
-
-        klines = self.get_data(symbol=symbol, tframe=tframe, fromdate=fromdate, todate=todate)
-        ohlcv = self.trim_data(klines)
-
-        c = ohlcv.pop("close")
-        h = ohlcv.pop("high")
-        l = ohlcv.pop("low")
-        v = ohlcv.pop("volume")
-
-        macd = ta.macd(c)
-        macd.rename(columns={"MACD_12_26_9": "macd",
-        "MACDh_12_26_9": "histogram",
-        "MACDs_12_26_9": "signal"},
-        inplace=True)
-
-        df = pd.concat([c, macd], axis=1)
-
-        return df
-    
 
 ##
 client = Client(api_key=API_KEY, api_secret=API_SECRET)
@@ -72,6 +47,13 @@ class Backtester:
         self.period = period
         self.stoploss = None
         self.opscount = 0
+        self.trades = []
+        
+
+        self.entrydates = []
+        self.exitdates = []
+        self.entryprices = []
+        self.exitprices = []
 
     def strategy(self, i, dates, prices, indicators):
 
@@ -79,7 +61,6 @@ class Backtester:
         time = dates[i]
         t0, buy_price = self.Entry
 
-        #if (self.S and self.X(price, I)):
         if (self.S and self.X(i, self.stoploss, buy_price, prices, indicators, self.period)):
             #ordem de venda
             #aqui vai ser order = ...
@@ -92,9 +73,14 @@ class Backtester:
             self.profits.append(percentual_profit)
             res_time = str(time - t0)
             print(f"vendeu a {sell_price} em {time}. Diferença absoluta de: {profit}; Diferença percentual: {percentual_profit}%. Tempo de resolução: {res_time} ")
-            #self.log.write(f"({self.opscount}) vendeu a {sell_price} em {time}. Diferença absoluta de: {profit}; Diferença percentual: {percentual_profit}%. Tempo de resolução: {res_time}.\n")
+            
             self.log[self.opscount].append(f"({self.opscount}) vendeu a {sell_price} em {time}. Diferença absoluta de: {profit}; Diferença percentual: {percentual_profit}%. Tempo de resolução: {res_time}.\n")
+            self.trades[-1].append(time)
             self.opscount += 1
+
+            self.exitdates.append(time)
+            self.exitprices.append(price)
+
             self.S = not(self.S)
 
             return self.Entry, self.eXit, profit, res_time, self.S #tem que ver melhor que que precisa retornar
@@ -102,11 +88,13 @@ class Backtester:
         elif (not(self.S) and self.E(i, prices, indicators, self.period)):
 
             self.Entry = [time, price]
-            #self.stoploss = price - indicators.ema50.iloc[i]
-            #print("Stoploss: ", self.stoploss)
             print(f"comprou a {price} em {time}")
-            #self.log.write(f"({self.opscount}) comprou a {price} em {time}.\n")
             self.log.append([f"({self.opscount}) comprou a {price} em {time}.\n"])
+
+            self.entrydates.append(time)
+            self.entryprices.append(price)
+
+            self.trades.append([time])
             self.S = not(self.S)
 
             return None
@@ -120,9 +108,14 @@ class Backtester:
                 self.profits.append(percentual_profit)
                 res_time = str(time - t0)
                 print(f"Stop-loss: vendeu a {sell_price} em {time}. Diferença absoluta de: {profit}; Diferença percentual: {percentual_profit}%. Tempo de resolução: {res_time} ")
-                #self.log.write(f"({self.opscount}) STOP-LOSS: Vendeu a {sell_price} em {time}. Diferença absoluta de: {profit}; Diferença percentual: {percentual_profit}%. Tempo de resolução: {res_time}.\n")
+
                 self.log[self.opscount].append(f"({self.opscount}) STOP-LOSS: Vendeu a {sell_price} em {time}. Diferença absoluta de: {profit}; Diferença percentual: {percentual_profit}%. Tempo de resolução: {res_time}.\n")
+                self.trades[-1].append(time)
                 self.opscount += 1
+                
+                self.exitdates.append(time)
+                self.exitprices.append(price)
+                
                 self.S = not(self.S)
                 return self.Entry, self.eXit, profit, res_time, self.S
 
@@ -146,24 +139,27 @@ class Backtester:
 
         total_profit = 0
         for profit in self.profits:
-            
             total_profit += profit
 
-        #info = client.get_ticker(symbol=symbol)
-        #ethprice = float(info["lastPrice"])
         print(f"Lucro percentual aproximado: {total_profit}")
         with open(f"{filename}", "w") as log:
             for i, trade in enumerate(self.log):
-                #log.write(f"(({i}))\n")
+
                 log.writelines(trade)
-                #log.write(trade[1]+"\n")
-            #log.write("\n")
+
         log = open(f"{filename}", "a")
         log.write(f"Lucro percentual total: {total_profit}%.")
         log.close()            
-        #self.log.write(f"Lucro percentual total: {total_profit}")
-        #self.log.close()
-        return total_profit
+
+        csv_data = []
+        for (a, b, c, d, e) in zip(self.entrydates, self.entryprices, self.exitdates, self.exitprices, self.profits):
+            csv_data.append([a, b, c, d, e])
+            
+        csv_name = filename.replace(".txt", ".csv")
+        dftrades = pd.DataFrame(data = csv_data, columns = ["entry_date", "entry_price", "exit_date", "exit_price", "profit"])
+        dftrades.to_csv(f'{csv_name}', index = False)
+
+        return total_profit, self.trades
 
 
 ##
@@ -178,10 +174,11 @@ def E(i, prices, indicators, period):
     else:
         return False
     
-
+#stoploss conditions
 def stoploss_check(i, stoploss, buy_price, prices, indicators):
     return ((prices.iloc[i]/buy_price - 1)*100 <= -1.0)
 
+#exit conditions
 def X(i, stoploss, buy_price, prices, indicators, period):
     
     macd = indicators["macd"]
@@ -200,15 +197,25 @@ def X(i, stoploss, buy_price, prices, indicators, period):
     
 
 
-##
-#exit conditions
 
 ##
-
 backtester = Backtester(client, df, E, X, stoploss_check, 6)
-total_profit = backtester.backtest()
+total_profit, trades = backtester.backtest()
+##
 
+from looker import Looker
 
 ##
+replaced_fromdate = fromdate.replace(" ", "-")
+nowdate = lambda: "Now" if todate == None else todate.replace(" ", "-")
+output_file(f"{symbol}_{tframe}_from={replaced_fromdate}_to={nowdate()}.html")
+
+looker = Looker(df, symbol, tframe, fromdate)
+
+##
+p = looker.look(trades=trades)
+##
+show(p)
+
 
 ##

@@ -1,0 +1,5 @@
+python-binance
+bokeh
+pandas
+pandas_ta
+numpy

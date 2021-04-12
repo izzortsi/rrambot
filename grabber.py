@@ -47,4 +47,24 @@ class Grabber:
         df = pd.concat([cs, ci, c, cm, v], axis=1)
 
         return df
+class GrabberMACD(Grabber):
 
+    def compute_indicators(self, symbol="BTCUSDT", tframe="30m", fromdate="1 day ago", todate = None, indicators=[]):
+
+        klines = self.get_data(symbol=symbol, tframe=tframe, fromdate=fromdate, todate=todate)
+        ohlcv = self.trim_data(klines)
+
+        c = ohlcv.pop("close")
+        h = ohlcv.pop("high")
+        l = ohlcv.pop("low")
+        v = ohlcv.pop("volume")
+
+        macd = ta.macd(c)
+        macd.rename(columns={"MACD_12_26_9": "macd",
+        "MACDh_12_26_9": "histogram",
+        "MACDs_12_26_9": "signal"},
+        inplace=True)
+
+        df = pd.concat([c, macd], axis=1)
+
+        return df
