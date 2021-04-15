@@ -12,10 +12,11 @@ API_KEY = ""
 API_SECRET = ""
 symbol="BTCUSDT"
 tframe="15m"
-fromdate="1 month ago"
-todate = "5 day ago"
-stoploss_parameter = -2.0
-take_profit = 10.0
+fromdate="5 month ago"
+todate = "2 month ago"
+stoploss_parameter = -0.4
+take_profit = 3.5
+n1, n2 = 3, 2
 ##
 
 ##
@@ -198,20 +199,14 @@ def X(i, stoploss, buy_price, prices, indicators, period):
         return True
     else:
         return False
-    
-    
-    
-
-
 
 ##
-backtester = Backtester(client, df, E, X, stoploss_check, 9, 3)
+backtester = Backtester(client, df, E, X, stoploss_check, n1, n2)
 total_profit, trades = backtester.backtest()
 ##
 
 from looker import Looker
 
-##
 replaced_fromdate = fromdate.replace(" ", "-")
 nowdate = lambda: "Now" if todate == None else todate.replace(" ", "-")
 output_file(f"{symbol}_{tframe}_from={replaced_fromdate}_to={nowdate()}.html")
@@ -220,8 +215,13 @@ looker = Looker(df, symbol, tframe, fromdate)
 
 ##
 p = looker.look(trades=trades)
-##
 save(p)
-
-
 ##
+print(f"""
+symbol={symbol}
+fromdate={fromdate}
+todate = {todate}
+stoploss_parameter = {stoploss_parameter}
+take_profit = {take_profit}
+n1, n2 = {n1}, {n2}
+""")
