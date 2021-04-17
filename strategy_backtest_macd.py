@@ -29,8 +29,9 @@ filename = f"{symbol}_{tframe}_from={replaced_fromdate}_to={nowdate()}.txt"
 client = Client(api_key=API_KEY, api_secret=API_SECRET)
 grab = GrabberMACD(client)
 ##
-
-df = grab.compute_indicators(symbol=symbol, tframe=tframe, fromdate=fromdate, todate=todate)
+grab.get_data(symbol=symbol, tframe=tframe, fromdate=fromdate, todate=todate)
+grab.trim_data()
+df = grab.compute_indicators()
 
 ##
 class Backtester:
