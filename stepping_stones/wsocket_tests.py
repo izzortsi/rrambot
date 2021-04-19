@@ -1,27 +1,50 @@
-##
+# %%
 import os
 import time
 from binance.client import Client
 from binance.websockets import BinanceSocketManager
 from twisted.internet import reactor
-##
-data = []
+
+# %%
+databtc = []
+dataeth = []
+# %%
+
+
 def btc_trade_history(msg):
-    ''' define how to process incoming WebSocket messages '''
-    if msg['e'] != 'error':
-        global data
-        data.append(msg["k"])
-        print(data[-1])
+    """ define how to process incoming WebSocket messages """
+    if msg["e"] != "error":
+        global databtc
+        databtc.append(msg["k"])
+        print(databtc[-1])
+
+
+def eth_trade_history(msg):
+    """ define how to process incoming WebSocket messages """
+    if msg["e"] != "error":
+        global dataeth
+        dataeth.append(msg["k"])
+        print(dataeth[-1])
+
+
+# %%
+client = Client()
+# %%
+# bsm = BinanceSocketManager(client)
+bsm = BinanceMul(client)
+# %%
+btc_ckey = bsm.start_kline_socket("BTCUSDT", btc_trade_history)
+bnb_ckey = bsm.start_kline_socket("ETHUSDT", eth_trade_history)
+# %%
+databtc
 ##
-client=Client()
-##
-bsm = BinanceSocketManager(client)
-##
-btc_ckey = bsm.start_kline_socket('BTCUSDT', btc_trade_history)
+dataeth
+# %%
 bsm.start()
-##
-eth_ckey = bsm.start_kline_socket('ETHUSDT', btc_trade_history)
-##
+# %%
+bnb_ckey = bsm.start_kline_socket("BNBUSDT", btc_trade_history)
+eth_ckey = bsm.start_kline_socket("ETHUSDT", btc_trade_history)
+# %%
 bsm.close()
-##
+# %%
 reactor.stop()

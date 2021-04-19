@@ -1,14 +1,23 @@
 ##
+import pandas as pd
 from strategy import Strategy
+from grabber import *
 import numpy as np
 ##
 class MacdStrategy(Strategy):
     def __init__(self, n1, n2, *args):
         self.n1 = n1
         self.n2 = n2
-        args = list(args)
-        Strategy.__init__(self, *args)
+        self.data = 
+        supargs = list(args)
+        super().__init__(*supargs)
         self.histogram = self.indicators["histogram"]
+
+    def 
+        client = Client()
+        grab = GrabberMACD(client)
+        grab.get_data()
+        self.df = grab.compute_indicators() 
 
     def E(self, i):
 
@@ -33,20 +42,19 @@ class MacdStrategy(Strategy):
 
 
 ##
-
-from grabber import GrabberMACD
 from binance.client import Client
 ##
 client = Client()
 grab = GrabberMACD(client)
-
-##
+grab.get_data()
 df = grab.compute_indicators()
 ##
-
+df
+##
 macd_strat = MacdStrategy(1, 2, df, 2.4, 0)
 ##
 macd_strat.E(1)
 ##
-macd_strat.histogram.append(1)
+macd_strat.histogram
 ##
+
