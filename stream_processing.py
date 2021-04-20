@@ -25,6 +25,7 @@ import threading
 class StreamProcesser:
     def __init__(self, bsm, stream_name, data=[]):
         self.bsm = bsm
+        self.stream_id = self.bsm.get_stream_id_by_label(stream_name)
         self.data = data
         self.keep_running = True
         self.stream = stream_name

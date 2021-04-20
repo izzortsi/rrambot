@@ -9,6 +9,9 @@ from grabber import *
 
 manager = Manager()
 # %%
+manager.bsm.pop_stream_data_from_stream_buffer
+
+# %%
 # parameters
 
 symbol = "ADABTC"
@@ -33,13 +36,7 @@ strat = MacdStrategy(
 # %%
 
 # %%
-manager.add_trader(strat, 100)
-# %%
-manager.get_traders()
-# %%
-trader1 = manager.get_traders()["ADABTC_15m_brainded_macd"]
-# %%
-trader1
+trader1 = manager.add_trader(strat, 100)
 # %%
 trader1.trade()
 # %%
@@ -54,5 +51,5 @@ trader1.name
 trader1.strategy
 trader1.stream_processer.keep_running = False
 
-
+trader1.stream_processer.data
 # %%

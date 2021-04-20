@@ -97,4 +97,4 @@ worker_thread.start()
 # %%
 
 # %%
-process_stream.keep_processing = True
+process_stream.keep_processing = False

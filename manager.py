@@ -28,7 +28,11 @@ class Manager:
         name = f"{strategy.symbol}_{strategy.timeframe}_{strategy.name}"
 
         trader_id = self.bsm.create_stream(
-            f"kline_{strategy.timeframe}", strategy.symbol, stream_label=name
+            f"kline_{strategy.timeframe}",
+            strategy.symbol,
+            stream_label=name,
+            stream_buffer_name=name,
+            output="UnicornFy",
         )
 
         atrader = ATrader(name, self, trader_id, strategy, init_val)
