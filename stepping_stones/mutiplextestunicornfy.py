@@ -44,39 +44,70 @@ import time
 # import class to process stream data
 from process_streams import BinanceWebSocketApiProcessStreams
 
-# %%
-# https://docs.python.org/3/library/logging.html#logging-levels
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename=os.path.basename(__file__) + ".log",
-    format="{asctime} [{levelname:8}] {process} {thread} {module}: {message}",
-    style="{",
-)
-
 # create instance of BinanceWebSocketApiManager and provide the function for stream processing
-binance_websocket_api_manager = BinanceWebSocketApiManager(
-    BinanceWebSocketApiProcessStreams.process_stream_data
-)
+binance_websocket_api_manager = BinanceWebSocketApiManager()
 # %%
 # define markets
-markets = {"ethusdt", "btcusdt"}
+markets = ["ethusdt", "btcusdt"]
 # %%
 # define stream channels
-channels = {
-    "kline_1",
-    "kline_5",
-    "kline_15",
-}
+channels = ["kline_1", "kline_15"]
 # %%
 # create and start the stream
-print("please wait 10 seconds!")
-time.sleep(3)
-multi_stream_id = binance_websocket_api_manager.create_stream(channels, markets)
-binance_websocket_api_manager.print_stream_info(multi_stream_id)
-time.sleep(10)
+# %%
+def print_stream(stream_id, data, n=10):
+    label = binance_websocket_api_manager.get_stream_label(eth_id)
+    c = 0
+    while c <= n:
+        if binance_websocket_api_manager.is_manager_stopping():
+            exit(0)
+        oldest_stream_data_from_stream_buffer = (
+            binance_websocket_api_manager.pop_stream_data_from_stream_buffer(
+                stream_buffer_name=label
+            )
+        )
+        if oldest_stream_data_from_stream_buffer is False:
+            time.sleep(0.01)
+        else:
+            if oldest_stream_data_from_stream_buffer is not None:
+                try:
+                    if (
+                        oldest_stream_data_from_stream_buffer["event_time"]
+                        >= oldest_stream_data_from_stream_buffer["kline"][
+                            "kline_close_time"
+                        ]
+                    ):
+                        # print only the last kline
+                        data.append(oldest_stream_data_from_stream_buffer)
+                        print(f"UnicornFy: {oldest_stream_data_from_stream_buffer}")
+                except KeyError:
+                    print(f"dict: {oldest_stream_data_from_stream_buffer}")
+                except TypeError:
+                    print(f"raw_data: {oldest_stream_data_from_stream_buffer}")
+
+        c += 1
+
+
+# %%
+
+# %%
+eth_id = binance_websocket_api_manager.create_stream(
+    channels[0], markets[0], output="UnicornFy", stream_label="ethusdt_1m"
+)
+# %%
+btc_id = binance_websocket_api_manager.create_stream(
+    "kline_1", "btcusdt", output="UnicornFy"
+)
+# binance_websocket_api_manager.print_stream_info(eth_id)
+# %%
+data = []
+print_stream(btc_id, data, n=10000)
+
+# %%
+data
 # %%
 # stop the stream
-binance_websocket_api_manager.stop_stream(multi_stream_id)
+binance_websocket_api_manager.stop_stream(eth_id)
 time.sleep(3)
 # %%
 # print info about the stream

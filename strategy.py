@@ -1,8 +1,7 @@
 # %%
 import pandas as pd
-from strategy import Strategy
-from grabber import *
 import numpy as np
+from grabber import *
 
 # %%
 
@@ -10,15 +9,23 @@ import numpy as np
 class Strategy:
     def __init__(
         self,
-        data,
+        name,
+        grabber,
+        symbol,
+        timeframe,
         stoploss_parameter,
         take_profit,
+        limit=None,
         entry_conditions=None,
         exit_conditions=None,
         stoploss_conditions=None,
     ):
-
-        self.df = data
+        self.name = name
+        self.symbol = symbol
+        self.timeframe = timeframe
+        self.grabber = grabber
+        self.grabber.get_data(symbol=symbol, tframe=timeframe, limit=limit)
+        self.df = self.grabber.compute_indicators()
         self.indicators = self.df.loc[:, self.df.columns != "close"]
         self.closes = self.df["close"]
         self.datasize = len(self.closes)
@@ -32,11 +39,13 @@ class Strategy:
 
 
 class MacdStrategy(Strategy):
-    def __init__(self, n1, n2, *args):
+    def __init__(self, n1, n2, *args, **kwargs):
         self.n1 = n1
         self.n2 = n2
-        supargs = list(args)
-        super().__init__(*supargs)
+        # supargs = list(args)
+        # supkwargs = dict(kwargs)
+        print(kwargs)
+        super().__init__("brainded_macd", *args, **kwargs)
         self.histogram = self.indicators["histogram"]
 
     def E(self, i):
@@ -49,7 +58,7 @@ class MacdStrategy(Strategy):
     def X(self, i, buy_price):
 
         if (
-            (self.prices.iloc[i] / buy_price - 1) * 100 >= self.take_profit
+            (self.closes.iloc[i] / buy_price - 1) * 100 >= self.take_profit
         ) and (  # pelo menos `take_profit` de lucro
             np.alltrue(self.histogram.iloc[:i].tail(self.n2) > 0)
         ):
@@ -58,23 +67,7 @@ class MacdStrategy(Strategy):
             return False
 
     def stoploss_check(self, i, buy_price):
-        return (self.prices.iloc[i] / buy_price - 1) * 100 <= self.stoploss_parameter
+        return (self.closes.iloc[i] / buy_price - 1) * 100 <= self.stoploss_parameter
 
 
-##
-from binance.client import Client
-
-##
-client = Client()
-grab = GrabberMACD(client)
-grab.get_data()
-df = grab.compute_indicators()
-##
-df
-##
-macd_strat = MacdStrategy(1, 2, df, 2.4, 0)
-##
-macd_strat.E(1)
-##
-macd_strat.histogram
 ##

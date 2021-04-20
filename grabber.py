@@ -77,14 +77,3 @@ class GrabberMACD(Grabber):
 
 
 ##
-
-from binance.client import Client
-
-client = Client()
-##
-grab = GrabberMACD(client)
-##
-grab.get_data()
-##
-grab.ohlcv
-##

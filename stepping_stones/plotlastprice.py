@@ -7,7 +7,7 @@ try:
 except ImportError:
     print("Please install `matplotlib`! https://pypi.org/project/matplotlib")
     exit(1)
-
+# %%
 binance_websocket_api_manager = ubwam.BinanceWebSocketApiManager()
 binance_websocket_api_manager.create_stream("trade", "btcusdt", output="UnicornFy")
 
@@ -20,7 +20,7 @@ ax = fig.add_subplot(1, 1, 1)
 
 print("Please wait a few seconds until enough data has been received!")
 
-
+# %%
 def animate(i, xs, ys):
     data = binance_websocket_api_manager.pop_stream_data_from_stream_buffer()
     try:
@@ -38,6 +38,8 @@ def animate(i, xs, ys):
     except TypeError:
         pass
 
+
+# %%
 
 ani = animation.FuncAnimation(fig, animate, fargs=(xs, ys), interval=5)
 plt.show()
