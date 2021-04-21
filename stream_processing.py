@@ -4,6 +4,7 @@
 import time
 import os
 import threading
+from operator import itemgetter
 
 # %%
 
@@ -32,29 +33,29 @@ class StreamProcesser:
 
     def process_stream(self):
         while self.keep_running:
-            time.sleep(2)
+            time.sleep(5)
             if self.bsm.is_manager_stopping():
-                print("1")
                 exit(0)
             oldest_stream_data_from_stream_buffer = (
-                self.bsm.pop_stream_data_from_stream_buffer(
-                    stream_buffer_name=self.stream
-                )
+                self.bsm.pop_stream_data_from_stream_buffer(self.stream)
             )
 
             if oldest_stream_data_from_stream_buffer is False:
                 time.sleep(0.01)
-                print("2")
             else:
                 if oldest_stream_data_from_stream_buffer is not None:
                     try:
                         # print only the last kline
-                        self.data.append(oldest_stream_data_from_stream_buffer)
-                        print(f"{self.stream}: {oldest_stream_data_from_stream_buffer}")
-                    except KeyError:
-                        print(f"dict: {oldest_stream_data_from_stream_buffer}")
-                    except TypeError:
-                        print(f"raw_data: {oldest_stream_data_from_stream_buffer}")
+                        data = itemgetter("symbol", "close_price", "is_closed")(
+                            oldest_stream_data_from_stream_buffer["kline"]
+                        )
+                        self.data.append(data)
+                        print(f"{self.stream}: {data}")
+                    except Exception:
+                        # not able to process the data? write it back to the stream_buffer
+                        self.bsm.add_to_stream_buffer(
+                            oldest_stream_data_from_stream_buffer
+                        )
 
 
 # %%

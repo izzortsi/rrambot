@@ -20,8 +20,8 @@ class Manager:
         self.bsm = BinanceWebSocketApiManager(
             exchange="binance.com", output_default="UnicornFy"
         )
-        self.traders = {}
-        self.trading = []
+        self.traders = {}  # traders
+        self.trading = []  # traders ativos
 
     def add_trader(self, strategy, init_val):
 
@@ -50,9 +50,11 @@ class Manager:
         else:
             self.socket_error = True
 
-    def remove_trader(self, name=None, conditions=None):
+    def remove_traders(self, traders, conditions=None):
         # remove um trader diretamente pelo nome ou por condiçoes (como determiná-las?)
-        raise NotImplementedError
+        for name, trader in traders:
+            trader.stop_trading()
+            del self.traders[name]
 
     def get_traders(self):
         print(self.traders.keys())
