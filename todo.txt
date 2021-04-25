@@ -1,3 +1,4 @@
+>>first and foremost: o trader tem que tradar
 >classe pra estratégias, com uma api coerente, q as generalize de forma a ser possível criar um modulo de backtest pra estratégias quaisquer
 >modulo de backtest generalizado
 >modulo de visualizaçao coerente com o grabber, o modulo de backtest e estrategias
