@@ -1,13 +1,18 @@
 import unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager as ubwam
 import datetime as dt
+from matplotlib import use
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
-try:
-    import matplotlib.pyplot as plt
-    import matplotlib.animation as animation
-except ImportError:
-    print("Please install `matplotlib`! https://pypi.org/project/matplotlib")
-    exit(1)
+print("Please install `matplotlib`! https://pypi.org/project/matplotlib")
+
+
+matplotlib.use('qt5agg')
 # %%
+%matplotlib
+
+# %%
+
 binance_websocket_api_manager = ubwam.BinanceWebSocketApiManager()
 binance_websocket_api_manager.create_stream("trade", "btcusdt", output="UnicornFy")
 
