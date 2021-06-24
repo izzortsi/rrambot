@@ -1,6 +1,6 @@
 # %%
 import pandas as pd
-from strategy import Strategy
+#from strategy import Strategy
 from grabber import *
 import numpy as np
 
@@ -16,9 +16,11 @@ class Strategy:
         entry_conditions=None,
         exit_conditions=None,
         stoploss_conditions=None,
+        name="nameless_accursed_strategy",
     ):
 
         self.df = data
+        self.name = name
         self.indicators = self.df.loc[:, self.df.columns != "close"]
         self.closes = self.df["close"]
         self.datasize = len(self.closes)
@@ -30,13 +32,16 @@ class Strategy:
         self.stoploss_parameter = stoploss_parameter
         self.take_profit = take_profit
 
+# %%
+
 
 class MacdStrategy(Strategy):
-    def __init__(self, n1, n2, *args):
+    def __init__(self, n1, n2, *args, **kwargs):
         self.n1 = n1
         self.n2 = n2
         supargs = list(args)
-        super().__init__(*supargs)
+        supkwargs = dict(kwargs)
+        super().__init__(*supargs, **supkwargs)
         self.histogram = self.indicators["histogram"]
 
     def E(self, i):
@@ -61,20 +66,22 @@ class MacdStrategy(Strategy):
         return (self.prices.iloc[i] / buy_price - 1) * 100 <= self.stoploss_parameter
 
 
-##
-from binance.client import Client
+# %%
 
-##
-client = Client()
-grab = GrabberMACD(client)
-grab.get_data()
-df = grab.compute_indicators()
-##
-df
-##
-macd_strat = MacdStrategy(1, 2, df, 2.4, 0)
-##
-macd_strat.E(1)
-##
-macd_strat.histogram
-##
+if __name__ == "__main__":
+    from binance.client import Client
+
+
+    client = Client()
+    grab = GrabberMACD(client)
+    grab.get_data()
+    df = grab.compute_indicators()
+    ##
+    df
+    ##
+    macd_strat = MacdStrategy(1, 2, df, 2.4, 0)
+    ##
+    macd_strat.E(1)
+    ##
+    macd_strat.histogram
+    ##

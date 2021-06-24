@@ -5,19 +5,19 @@ from grabber import *
 import numpy as np
 ##
 class MacdStrategy(Strategy):
-    def __init__(self, n1, n2, *args):
+    def __init__(self, n1, n2, *args, **kwargs):
         self.n1 = n1
         self.n2 = n2
-        self.data = 
         supargs = list(args)
-        super().__init__(*supargs)
+        supkwargs = dict(kwargs)
+        super().__init__(*supargs, **supkwargs)
         self.histogram = self.indicators["histogram"]
 
-    def 
+    def
         client = Client()
         grab = GrabberMACD(client)
         grab.get_data()
-        self.df = grab.compute_indicators() 
+        self.df = grab.compute_indicators()
 
     def E(self, i):
 
@@ -27,7 +27,7 @@ class MacdStrategy(Strategy):
             return False
 
     def X(self, i, buy_price):
-        
+
         if (
             ((self.prices.iloc[i]/buy_price - 1)*100 >= self.take_profit) and #pelo menos `take_profit` de lucro
             (np.alltrue(self.histogram.iloc[:i].tail(self.n2) > 0))
@@ -35,8 +35,8 @@ class MacdStrategy(Strategy):
             return True
         else:
             return False
-    
-    def stoploss_check(self, i, buy_price):    
+
+    def stoploss_check(self, i, buy_price):
         return ((self.prices.iloc[i]/buy_price - 1)*100 <= self.stoploss_parameter)
 
 
@@ -57,4 +57,3 @@ macd_strat.E(1)
 ##
 macd_strat.histogram
 ##
-
