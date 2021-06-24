@@ -1,8 +1,12 @@
-##
+
+# %%
+
 import pandas as pd
 import pandas_ta as ta
 
-##
+
+# %%
+
 class Grabber:
     def __init__(self, client):
         self.client = client
@@ -25,7 +29,7 @@ class Grabber:
 
         df = pd.DataFrame(data=self.klines)
         DOHLCV = df.iloc[:, [0, 1, 2, 3, 4, 5]]
-        DOHLCV[0] = pd.to_datetime(DOHLCV[0], unit="ms")
+        DOHLCV.loc[:, 0] = pd.to_datetime(DOHLCV.loc[:, 0], unit="ms")
         DOHLCV.columns = ["date", "open", "high", "low", "close", "volume"]
         OHLCV = DOHLCV.iloc[:, [1, 2, 3, 4, 5]]
         OHLCV.set_index(pd.DatetimeIndex(DOHLCV["date"]), inplace=True)
@@ -34,10 +38,10 @@ class Grabber:
 
     def compute_indicators(self, indicators=[]):
 
-        c = self.ohlcv.pop("close")
-        h = self.ohlcv.pop("high")
-        l = self.ohlcv.pop("low")
-        v = self.ohlcv.pop("volume")
+        c = self.ohlcv["close"]
+        h = self.ohlcv["high"]
+        l = self.ohlcv["low"]
+        v = self.ohlcv["volume"]
 
         cs = ta.vwma(h, v, length=3)
         cs.rename("csup", inplace=True)
@@ -56,10 +60,10 @@ class Grabber:
 class GrabberMACD(Grabber):
     def compute_indicators(self, indicators=[]):
 
-        c = self.ohlcv.pop("close")
-        h = self.ohlcv.pop("high")
-        l = self.ohlcv.pop("low")
-        v = self.ohlcv.pop("volume")
+        c = self.ohlcv["close"]
+        h = self.ohlcv["high"]
+        l = self.ohlcv["low"]
+        v = self.ohlcv["volume"]
 
         macd = ta.macd(c)
         macd.rename(
@@ -76,15 +80,23 @@ class GrabberMACD(Grabber):
         return df
 
 
-##
 
-from binance.client import Client
+# %%
 
-client = Client()
-##
-grab = GrabberMACD(client)
-##
-grab.get_data()
-##
-grab.ohlcv
-##
+if __name__ == "__main__":
+
+    from binance.client import Client
+
+    client = Client()
+
+
+
+    grab = GrabberMACD(client)
+
+
+
+    grab.get_data()
+
+
+
+    grab.ohlcv
