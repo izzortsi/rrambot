@@ -37,8 +37,9 @@ class StreamProcesser:
                         oldest_stream_data_from_stream_buffer["kline"]
                     )
                     self.data_dict[stream_name].append(data)
-                    if c % 25 == 0:
+                    if c % 20 == 0:
                         print(data)
+                        self.data_dict[stream_name] = []
                 except Exception:
                     # not able to process the data? write it back to the stream_buffer
                     self.bwsm.add_to_stream_buffer(
