@@ -7,7 +7,8 @@ import time
 import os
 import threading
 from atrader import *
-from strategy import *
+import strategy
+import stream_processing
 
 # from stream_processing import ProcessStream
 
@@ -20,24 +21,20 @@ class Manager:
         self.bsm = BinanceWebSocketApiManager(
             exchange="binance.com", output_default="UnicornFy"
         )
+        self.stream_processer = StreamProcesser(self.bsm)
         self.traders = {}  # traders
         self.trading = []  # traders ativos
 
     def add_trader(self, strategy, init_val):
 
         name = f"{strategy.symbol}_{strategy.timeframe}_{strategy.name}"
+        stream_name = f"stream_{name}"
+        trader_name = f"trader_{name}"
+        self.stream_processer.start_new_stream(f"kline_{strategy.timeframe}", strategy.symbol, stream_name=stream_name)
 
-        trader_id = self.bsm.create_stream(
-            f"kline_{strategy.timeframe}",
-            strategy.symbol,
-            stream_label=name,
-            stream_buffer_name=name,
-            output="UnicornFy",
-        )
+        atrader = ATrader(trader_name, self, self.stream_processer, strategy, init_val)
 
-        atrader = ATrader(name, self, trader_id, strategy, init_val)
-
-        self.traders[name] = atrader
+        self.traders[trader_name] = atrader
 
         return atrader
 

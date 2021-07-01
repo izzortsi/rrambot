@@ -63,11 +63,9 @@ class StreamProcesser:
         worker_thread = threading.Thread(
             target=self.process_stream_data_from_stream_buffer, args=(stream_name,)
         )
-
         worker_thread.start()
 
         self.streams[stream_name].append(worker_thread)
-
         self.keep_streaming[stream_name] = True
 
         return {stream_name: self.streams[stream_name]}
@@ -81,34 +79,43 @@ class StreamProcesser:
 
 
 # %%
+if __name__ == "__main__":
 
-bwsm = BinanceWebSocketApiManager(output_default="UnicornFy")
+    bwsm = BinanceWebSocketApiManager(output_default="UnicornFy")
+
+    markets = ["btcusdt", "ethusdt"]
+    channels = ["kline_15m"]
+    channel = "kline_15m"
+
+    # %%
+    processer = StreamProcesser(bwsm)
+    # %%
+    btcstream = processer.start_new_stream(channel, markets[0])
+    ethstream = processer.start_new_stream(channel, markets[1])
+    # %%
+    sleep(15)
+
+    # %%
+    processer.streams["btcusdt_kline_15m"]
+    # %%
+    stream_name = list(btcstream.keys())[0]
+    values = list(btcstream.values())[0]
+    # %%
+    stream_name
+    values
+    # %%
 
 
-markets = ["btcusdt", "ethusdt"]
-channels = ["kline_15m"]
-channel = "kline_15m"
+    bwsm.get_active_stream_list()
 
-# %%
-processer = StreamProcesser(bwsm)
-# %%
-btcstream = processer.start_new_stream(channel, markets[0])
-ethstream = processer.start_new_stream(channel, markets[1])
-# %%
+    # %%
+    processer.end_stream(ethstream)
+    processer.end_stream(btcstream)
+    # %%
+    processer.data_dict["btcusdt_kline_15m"]
+    processer.data_dict["ethusdt_kline_15m"]
 
-
-# %%
-
-bwsm.get_active_stream_list()
-
-# %%
-processer.end_stream(ethstream)
-processer.end_stream(btcstream)
-# %%
-processer.data_dict["btcusdt_kline_15m"]
-processer.data_dict["ethusdt_kline_15m"]
-
-# %%
-processer.data_dict
+    # %%
+    processer.data_dict
 
 # %%

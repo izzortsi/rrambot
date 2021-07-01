@@ -34,10 +34,10 @@ class Grabber:
 
     def compute_indicators(self, indicators=[]):
 
-        c = self.ohlcv.pop("close")
-        h = self.ohlcv.pop("high")
-        l = self.ohlcv.pop("low")
-        v = self.ohlcv.pop("volume")
+        c = self.ohlcv["close"]
+        h = self.ohlcv["high"]
+        l = self.ohlcv["low"]
+        v = self.ohlcv["volume"]
 
         cs = ta.vwma(h, v, length=3)
         cs.rename("csup", inplace=True)
@@ -56,10 +56,10 @@ class Grabber:
 class GrabberMACD(Grabber):
     def compute_indicators(self, indicators=[]):
 
-        c = self.ohlcv.pop("close")
-        h = self.ohlcv.pop("high")
-        l = self.ohlcv.pop("low")
-        v = self.ohlcv.pop("volume")
+        c = self.ohlcv["close"]
+        h = self.ohlcv["high"]
+        l = self.ohlcv["low"]
+        v = self.ohlcv["volume"]
 
         macd = ta.macd(c)
         macd.rename(
