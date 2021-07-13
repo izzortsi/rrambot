@@ -39,7 +39,8 @@ class Manager:
         return atrader
 
     def process_message(self, msg):
-        """ define how to process incoming WebSocket messages """
+        """ define how to process incoming WebSocket messages
+        >essa função eu peguei de algum lugar e acho que não vou usa, senão por referência"""
         if msg["e"] != "error":
             print(msg["k"]["c"])
             self.exitprices.append(msg["k"]["c"])
