@@ -17,21 +17,21 @@ numeric = Union[int, float]
 
 ##
 class Looker:
-    
+
     def __init__(self, df, symbol, tframe, fromdate):
         self.df = df
         self.symbol = symbol
         self.tframe = tframe
         self.fromdate = fromdate
-        
+
     def look(self, trades = None):
 
         source = ColumnDataSource(data=self.df)
         datasize = len(self.df)
-        range_tool_a = datasize // 5 
+        range_tool_a = datasize // 5
         range_tool_b = datasize // 3
         TOOLS = "crosshair, pan, wheel_zoom, box_zoom, reset, box_select, lasso_select"
-        
+
         hover = HoverTool(
             tooltips=[
                 ( 'time',   '@date{%m/%d %H:%M}'            ),
@@ -79,7 +79,7 @@ class Looker:
                     tools=['crosshair', 'pan', 'box_zoom', 'wheel_zoom', 'save', 'reset', subhover],
                     active_scroll = "wheel_zoom",
                     x_range=fig.x_range
-                    )        
+                    )
 
         cline = fig.line('date', 'close', source= source, color='black', name='cprices')
 
@@ -87,23 +87,23 @@ class Looker:
 
         hist_zero = Span(location=0,
                               dimension='width', line_color='green',
-                              line_dash='dashed', line_width=3)        
+                              line_dash='dashed', line_width=3)
         subfig.add_layout(hist_zero)
         #csline = fig.line('date', 'csup', source= source, color='green', line_alpha=0.8, line_dash = "dashed", name='cs')
         #cmline = fig.line('date', 'cmed', source= source, color='blue', line_alpha=0.8, line_dash = "dashed", name='cm')
         #ciline = fig.line('date', 'cinf', source= source, color='red', line_alpha=0.8, line_dash = "dashed", name='ci')
-        
+
         select = figure(title="Drag the middle and edges of the selection box to change the range above",
                         plot_height=100, plot_width=950, #y_range=fig.y_range,
                         x_axis_type="datetime", y_axis_type=None,
                         tools="", toolbar_location=None, background_fill_color="#efefef")
-        
+
         range_tool = RangeTool(x_range=fig.x_range)
         range_tool.overlay.fill_color = "navy"
         range_tool.overlay.fill_alpha = 0.2
 
         select.line('date', 'close', source=source)
-        
+
         #select.line('date', 'csup', source=source)
         #select.line('date', 'cmed', source=source)
         #select.line('date', 'cinf', source=source)
@@ -145,13 +145,13 @@ class Looker:
                  render_mode='canvas',
                  border_line_color='black',
                  border_line_alpha=0.0,
-                 background_fill_color='white', 
+                 background_fill_color='white',
                  background_fill_alpha=0.0,
                  text_font_size = "10px"
                 )
                 fig.add_layout(citation)
 
-        p = column(fig, subfig, select)                   
+        p = column(fig, subfig, select)
         #show(p)
         return p
 ##

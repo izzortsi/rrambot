@@ -1,10 +1,15 @@
-##
-from binance.client import Client
-from hist_grabber import *
+
+# %%
+
+import backtest.hist_grabber as hg
+import backtest.looker as lk
 import numpy as np
+from binance.client import Client
 from bokeh.io import output_file, save
 import pandas as pd
-##
+
+# %%
+
 
 #parametros
 
@@ -18,22 +23,34 @@ stoploss_parameter = -0.33
 take_profit = 3.5
 n1, n2 = 1, 1
 #n1, n2 = 3, 2
-##
 
-##
-##
+# %%
+
+
+
+# %%
+
+
+# %%
+
 replaced_fromdate = fromdate.replace(" ", "-")
 nowdate = lambda: "Now" if todate == None else todate.replace(" ", "-")
 filename = f"{symbol}_{tframe}_from={replaced_fromdate}_to={nowdate()}.txt"
 
-##
+
+# %%
+
 client = Client(api_key=API_KEY, api_secret=API_SECRET)
-grab = HistoricalMACDGrabber(client)
-##
+grab = hg.HistoricalMACDGrabber(client)
+
+# %%
+
 grab.get_data(symbol=symbol, tframe=tframe, fromdate=fromdate, todate=todate)
 df = grab.compute_indicators()
 
-##
+
+# %%
+
 class Backtester:
 
     def __init__(self, client, df, E, X, stoploss_check, bperiod, speriod):
@@ -53,7 +70,7 @@ class Backtester:
         self.stoploss = None
         self.opscount = 0
         self.trades = []
-        
+
 
         self.entrydates = []
         self.exitdates = []
@@ -78,7 +95,7 @@ class Backtester:
             self.profits.append(percentual_profit)
             res_time = str(time - t0)
             print(f"vendeu a {sell_price} em {time}. Diferença absoluta de: {profit}; Diferença percentual: {percentual_profit}%. Tempo de resolução: {res_time} ")
-            
+
             self.log[self.opscount].append(f"({self.opscount}) vendeu a {sell_price} em {time}. Diferença absoluta de: {profit}; Diferença percentual: {percentual_profit}%. Tempo de resolução: {res_time}.\n")
             self.trades[-1].append(time)
             self.opscount += 1
@@ -119,10 +136,10 @@ class Backtester:
                 self.log[self.opscount].append(f"({self.opscount}) STOP-LOSS: Vendeu a {sell_price} em {time}. Diferença absoluta de: {profit}; Diferença percentual: {percentual_profit}%. Tempo de resolução: {res_time}.\n")
                 self.trades[-1].append(time)
                 self.opscount += 1
-                
+
                 self.exitdates.append(time)
                 self.exitprices.append(price)
-                
+
                 self.S = not(self.S)
                 return self.Entry, self.eXit, profit, res_time, self.S
 
@@ -156,12 +173,12 @@ class Backtester:
 
         log = open(f"{filename}", "a")
         log.write(f"Lucro percentual total: {total_profit}%.")
-        log.close()            
+        log.close()
 
         csv_data = []
         for (a, b, c, d, e) in zip(self.entrydates, self.entryprices, self.exitdates, self.exitprices, self.profits):
             csv_data.append([a, b, c, d, e])
-            
+
         csv_name = filename.replace(".txt", ".csv")
         dftrades = pd.DataFrame(data = csv_data, columns = ["entry_date", "entry_price", "exit_date", "exit_price", "profit"])
         dftrades.to_csv(f'{csv_name}', index = False)
@@ -169,7 +186,9 @@ class Backtester:
         return total_profit, self.trades
 
 
-##
+
+# %%
+
 #entry conditions
 def E(i, prices, indicators, period):
     macd = indicators["macd"]
@@ -180,7 +199,7 @@ def E(i, prices, indicators, period):
         return True
     else:
         return False
-    
+
 #stoploss conditions
 def stoploss_check(i, stoploss, buy_price, prices, indicators):
     global stoploss_parameter
@@ -188,7 +207,7 @@ def stoploss_check(i, stoploss, buy_price, prices, indicators):
 
 #exit conditions
 def X(i, stoploss, buy_price, prices, indicators, period):
-    
+
     macd = indicators["macd"]
     histogram = indicators["histogram"]
     signal = indicators["signal"]
@@ -201,23 +220,31 @@ def X(i, stoploss, buy_price, prices, indicators, period):
     else:
         return False
 
-##
+
+# %%
+
 backtester = Backtester(client, df, E, X, stoploss_check, n1, n2)
 total_profit, trades = backtester.backtest()
-##
 
-from looker import Looker
+# %%
+
+
+
 
 replaced_fromdate = fromdate.replace(" ", "-")
 nowdate = lambda: "Now" if todate == None else todate.replace(" ", "-")
 output_file(f"{symbol}_{tframe}_from={replaced_fromdate}_to={nowdate()}.html")
 
-looker = Looker(df, symbol, tframe, fromdate)
+looker = lk.Looker(df, symbol, tframe, fromdate)
 
-##
+
+# %%
+
 p = looker.look(trades=trades)
 save(p)
-##
+
+# %%
+
 print(f"""
 symbol={symbol}
 fromdate={fromdate}
