@@ -1,8 +1,7 @@
 
 # %%
 
-import hist_grabber as hg
-import looker as lk
+import grabber
 import numpy as np
 import pandas as pd
 import argparse
@@ -14,7 +13,8 @@ from bokeh.io import output_file, save
 
 
 parser = argparse.ArgumentParser()
-
+parser.add_argument("-akey", "--API_KEY", type=str)
+parser.add_argument("-asec", "--API_SECRET", type=str)
 parser.add_argument("-s", "--symbol", type=str, default="BTCUSDT")
 parser.add_argument("-tf", "--timeframe", type=str, default="15m")
 parser.add_argument("-fromdate", "--fromdate", type=str, default="2 month ago")
@@ -27,8 +27,8 @@ parser.add_argument("-xw", "--exitwindow", type=int, default=1)
 args = parser.parse_args()
 #parametros
 
-API_KEY = ""
-API_SECRET = ""
+API_KEY = args.API_KEY
+API_SECRET = args.API_SECRET
 
 
 # %%
@@ -69,7 +69,10 @@ df = grab.compute_indicators()
 
 # %%
 
-class Backtester:
+class Strategy:
+    def __init__()
+
+class Manager:
 
     def __init__(self, client, df, E, X, stoploss_check, bperiod, speriod):
         self.log = []
@@ -239,13 +242,6 @@ def X(i, stoploss, buy_price, prices, indicators, period):
         return False
 
 
-# %%
-
-backtester = Backtester(client, df, E, X, stoploss_check, n1, n2)
-total_profit, trades = backtester.backtest()
-
-# %%
-
 
 
 
@@ -253,7 +249,7 @@ replaced_fromdate = fromdate.replace(" ", "-")
 nowdate = lambda: "Now" if todate == None else todate.replace(" ", "-")
 output_file(f"{symbol}_{tframe}_from={replaced_fromdate}_to={nowdate()}.html")
 
-looker = lk.Looker(df, symbol, tframe, fromdate, todate)
+looker = lk.Looker(df, symbol, tframe, fromdate)
 
 
 # %%
@@ -265,7 +261,6 @@ save(p)
 
 print(f"""
 symbol={symbol}
-timeframe={tframe}
 fromdate={fromdate}
 todate = {todate}
 stoploss_parameter = {stoploss_parameter}
