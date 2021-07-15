@@ -18,11 +18,12 @@ numeric = Union[int, float]
 ##
 class Looker:
 
-    def __init__(self, df, symbol, tframe, fromdate):
+    def __init__(self, df, symbol, tframe, fromdate, todate):
         self.df = df
         self.symbol = symbol
         self.tframe = tframe
         self.fromdate = fromdate
+        self.todate = todate
 
     def look(self, trades = None):
 
@@ -65,7 +66,7 @@ class Looker:
         )
 
         cylims = (min(self.df.close), max(self.df.close))
-        fig = figure(x_axis_type="datetime", title=f'{self.symbol}, {self.tframe}, {self.fromdate}',
+        fig = figure(x_axis_type="datetime", title=f'{self.symbol}, {self.tframe}, from {self.fromdate} to {self.todate}',
                     plot_width=950, plot_height=400,
                     tools=['crosshair', 'pan', 'box_zoom', 'wheel_zoom', 'save', 'reset', hover],
                     active_scroll = "wheel_zoom",
@@ -147,7 +148,7 @@ class Looker:
                  border_line_alpha=0.0,
                  background_fill_color='white',
                  background_fill_alpha=0.0,
-                 text_font_size = "10px"
+                 text_font_size = "8px"
                 )
                 fig.add_layout(citation)
 
