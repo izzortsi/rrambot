@@ -1,27 +1,45 @@
 
 # %%
 
-import backtest.hist_grabber as hg
-import backtest.looker as lk
+import hist_grabber as hg
+import looker as lk
 import numpy as np
+import pandas as pd
+import argparse
 from binance.client import Client
 from bokeh.io import output_file, save
-import pandas as pd
 
 # %%
+#parser
 
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-s", "--symbol", type=str, default="BTCUSDT")
+parser.add_argument("-tf", "--timeframe", type=str, default="15m")
+parser.add_argument("-fromdate", "--fromdate", type=str, default="2 month ago")
+parser.add_argument("-todate", "--todate", type=str, default="1 month ago")
+parser.add_argument("-sl", "--stoploss", type=float, default=-0.33)
+parser.add_argument("-tp", "--takeprofit", type=float, default=3.5)
+parser.add_argument("-ew", "--enterwindow", type=int, default=1)
+parser.add_argument("-xw", "--exitwindow", type=int, default=1)
+
+args = parser.parse_args()
 #parametros
 
 API_KEY = ""
 API_SECRET = ""
-symbol="BTCUSDT"
-tframe="15m"
-fromdate="5 month ago"
-todate = "2 month ago"
-stoploss_parameter = -0.33
-take_profit = 3.5
-n1, n2 = 1, 1
+
+
+# %%
+
+symbol=args.symbol
+tframe=args.timeframe
+fromdate=args.fromdate
+todate = args.todate
+stoploss_parameter = args.stoploss
+take_profit = args.takeprofit
+n1, n2 = args.enterwindow, args.exitwindow
 #n1, n2 = 3, 2
 
 # %%
