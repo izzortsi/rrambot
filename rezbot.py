@@ -20,6 +20,10 @@ parser.add_argument("-xw", "--exitwindow", type=int, default=1)
 
 args = parser.parse_args()
 
+
+
+
+
 class ATrader:
 
     def __init__(name, manager, strategy, init_val):

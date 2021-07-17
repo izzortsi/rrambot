@@ -1,6 +1,0 @@
-(0) comprou a 31797.86 em 2021-07-14 08:45:00.
-(0) vendeu a 33066.01 em 2021-07-14 18:35:00. Diferença absoluta de: 1268.1500000000015; Diferença percentual: 3.988161467469828%. Tempo de resolução: 0 days 09:50:00.
-(1) comprou a 32743.96 em 2021-07-14 18:55:00.
-(1) STOP-LOSS: Vendeu a 32469.52 em 2021-07-15 04:00:00. Diferença absoluta de: -274.4399999999987; Diferença percentual: -0.8381393087457922%. Tempo de resolução: 0 days 09:05:00.
-(2) comprou a 32504.95 em 2021-07-15 04:05:00.
-Lucro percentual total: 3.658161467469828%.
