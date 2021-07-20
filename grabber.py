@@ -1,8 +1,8 @@
-##
+# %%
 import pandas as pd
 import pandas_ta as ta
 
-##
+# %%
 class DataGrabber:
     def __init__(self, client):
         self.client = client
@@ -68,4 +68,12 @@ class DataGrabber:
             return df
 
 
-##
+# %%
+from binance.client import Client
+client = Client()
+dg =DataGrabber(client)
+# %%
+
+df = dg.get_data()
+
+# %%
