@@ -43,6 +43,30 @@ class Manager:
     def get_traders(self):
         return list(self.data.keys())
 
+    def close_traders(self, traders = None):
+        """
+        fecha todos os traders e todas as posições; pra emerg
+        """
+        if traders == None:
+            #fecha todos os traders
+            pass
+        else:
+            #fecha só os passados como argumento
+            pass
+        pass
+
+    def performance_check(self):
+        pass
+
+    def market_overview(self):
+        """
+        isso aqui pode fazer bastante coisa, na verdade pode ser mais sensato
+        fazer uma classe que faça as funções e seja invocada aqui.
+        mas, em geral, a idéia é pegar várias métricas de várias coins, algo que
+        sugira com clareza o sentimento do mercado. eventualmente, posso realmente
+        usar ML ou alguma API pra pegar sentiment analysis do mercado
+        """
+        pass
 
 # %%
 
