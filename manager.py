@@ -22,6 +22,7 @@ klines = klines.append(toappend, ignore_index=True)
 
 # %%
 
+
 class Manager:
     def __init__(self, api_key, api_secret):
         self.data = {}
@@ -66,6 +67,8 @@ class ATrader:
         #self.last_mark_price = self.grabber.get_data(symbol=self.symbol, tframe = self.timeframe, limit = 1)
         #self.data_window.append(self.last_)
         self.last_macd = self.data_window.tail(1)
+        self.init_time = None
+
 
     def start_futures_stream(self, stream="bnbusdt_perpetual@continuousKline_1m"):
         #stream = f"{self.symbol}@markPrice@1s"
