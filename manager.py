@@ -280,5 +280,3 @@ def interval_to_milliseconds(interval):
         except ValueError:
             pass
     return ms
-    return ms
-    return ms
