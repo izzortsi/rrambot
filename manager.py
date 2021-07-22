@@ -89,7 +89,7 @@ class ATrader:
         self.data_window = self._get_initial_data_window()
         # self.last_mark_price = self.grabber.get_data(symbol=self.symbol, tframe = self.timeframe, limit = 1)
         # self.data_window.append(self.last_)
-        self.last_macd = self.data_window.tail(1)
+        #self.last_histogram = self.data_window.tail(1).histogram
         self.init_time = time.time()
 
         self.is_positioned = False
@@ -101,12 +101,6 @@ class ATrader:
             callback=self.handle_stream_message, streams=[stream]
         )
         return self.stream_name
-
-    def handle_mark_price_message(self, msg):
-        # print(f"message type: {msg['stream']}")
-        # print(f"message type: {msg['data']['e']}")
-        # self.data[f"{msg['stream']}"]=msg['data']['k']['c']
-        self.last_mark_price = float(msg["p"])
 
     def handle_stream_message(self, msg):
         # print(f"message type: {msg['stream']}")
