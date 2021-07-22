@@ -2,17 +2,19 @@
 import os
 import time
 import pandas as pd
-from binance import ThreadedWebsocketManager
+from binance import ThreadedWebsocketManager, BinanceSocketManager
 from binance.client import Client
+from binance.helpers import round_step_size
 from grabber import DataGrabber
 import pandas_ta as ta
 import numpy as np
-
+import json
+import asyncio
+from binance import AsyncClient
 # %%
 
 api_key = os.environ.get('API_KEY')
 api_secret = os.environ.get('API_SECRET')
-
 # %%
 twm = ThreadedWebsocketManager(
         api_key=api_key, api_secret=api_secret)
@@ -22,8 +24,67 @@ client = Client(api_key=api_key, api_secret=api_secret)
 # %%
 
 # %%
-client.futures_account_trades()
+lkey = client.futures_stream_get_listen_key()
 
+
+
+# %%client.futures_change_leverage(symbol="ETHUSDT", leverage = leverage)
+
+
+ex_info = client.futures_exchange_info();
+
+
+# %%
+eth_info = ex_info["symbols"][1]
+eth_filters = eth_info["filters"]
+
+price_precision = ex_info["symbols"][1]["pricePrecision"]
+quantity_precision = ex_info["symbols"][1]["quantityPrecision"]
+base_asset_precision = ex_info["symbols"][1]['baseAssetPrecision']
+quote_asset_precision = ex_info["symbols"][1]['quotePrecision']
+
+step_size = float(eth_filters[1]["stepSize"])
+min_qty = float(eth_filters[1]["minQty"])
+min_notional = float(eth_filters[-2]["notional"])
+# %%
+
+#print(json.dumps(eth_filters, indent=2))
+# %%
+
+initial_usdt = 1.00
+leverage = 7
+client.futures_change_leverage(symbol="ETHUSDT", leverage = leverage)
+quantity = round_step_size((initial_usdt * leverage)/mark_price, step_size)
+
+quantity
+assert (initial_usdt * leverage) >= min_notional
+assert quantity >= min_qty
+
+# %%
+
+
+#client.futures_mark_price(symbol="ETHUSDT")
+
+#client.futures_create_order(symbol="ETHUSDT", side="SELL", quantity = 0.001, type = "STOP_MARKET", stopPrice = round_step_size(mark_price*0.99, 0.01),  workingType = "MARK_PRICE" )
+#client.futures_create_order(symbol="ETHUSDT", side="BUY", positionSide = "SHORT", quantity = 0.001, type = "TAKE_PROFIT_MARKET", stopPrice = round_step_size(mark_price*0.993, 0.01),  workingType = "MARK_PRICE" )
+eth = "ETHUSDT"
+# %%
+
+mark_price = float(client.futures_mark_price(symbol="ETHUSDT")["markPrice"])
+mark_price
+twm.start_futures_socket(fun)
+fun = lambda x: print(x)
+# %%
+#new_order = client.futures_create_order(symbol="ETHUSDT", side="SELL", quantity = quantity, type = "MARKET",  workingType = "MARK_PRICE" )
+# %%
+client.futures_position_information(symbol="ETHUSDT")
+#client.futures_change_position_margin(symbol=eth, amount=2.50, type=1)
+
+# %%
+#client.futures_change_position_mode(dualSidePosition="false")
+
+
+# %%
 
 # %%
 class Manager:
