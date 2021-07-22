@@ -9,19 +9,23 @@ import pandas_ta as ta
 import numpy as np
 
 # %%
-KEY = os.getenv('API_USER')
-SECRET = os.environ.get('API_PASSWORD')
-api_key = ""
-api_secret = ""
 
+api_key = os.environ.get('API_KEY')
+api_secret = os.environ.get('API_SECRET')
 
 # %%
-
-# %%
-self.twm = ThreadedWebsocketManager(
+twm = ThreadedWebsocketManager(
         api_key=api_key, api_secret=api_secret)
-futures_account_trades
+# %%
 
+client = Client(api_key=api_key, api_secret=api_secret)
+# %%
+
+# %%
+client.futures_account_trades()
+
+
+# %%
 class Manager:
     def __init__(self, api_key, api_secret):
         self.data = {}
