@@ -1,4 +1,3 @@
-
 # %%
 
 import time
@@ -8,10 +7,10 @@ from binance.client import Client
 from grabber import DataGrabber
 import pandas_ta as ta
 
- # %%
+# %%
 
-api_key = "tF8GCAOYQ6G8fqgiwPDv3cDGfPOJffrXpYUcgkcEY38UCTRxG8D7fblZwyOFoMEA"
-api_secret = "J4Gp5w0jdg2LICtXt1yY41TXWTOyrWCifCSMdyGtfMgVMVNFVDClnSXV9Tvh7zRT"
+api_key = ""
+api_secret = ""
 
 
 # %%
@@ -35,7 +34,9 @@ class Manager:
         self.twm.start()
 
     def start_futures_stream(self, stream="bnbusdt_perpetual@continuousKline_1m"):
-        stream_name = self.twm.start_futures_multiplex_socket(callback=self.handle_socket_message, streams=[stream])
+        stream_name = self.twm.start_futures_multiplex_socket(
+            callback=self.handle_socket_message, streams=[stream]
+        )
         return stream_name
 
     def start_trader(self, strategy):
@@ -46,10 +47,14 @@ class Manager:
 
     def handle_socket_message(self, msg):
         print(f"stream: {msg['stream']}")
-        print(f"message type: {msg['data']['e']}, close: {msg['data']['k']['c']}, volume: {msg['data']['k']['v']}")
-        self.data[f"{msg['stream']}"]=msg['data']['k']['c']
+        print(
+            f"message type: {msg['data']['e']}, close: {msg['data']['k']['c']}, volume: {msg['data']['k']['v']}"
+        )
+        self.data[f"{msg['stream']}"] = msg["data"]["k"]["c"]
+
 
 # %%
+
 
 class ATrader:
     def __init__(self, manager, strategy):
@@ -67,38 +72,44 @@ class ATrader:
 
         self.grabber = DataGrabber(self.client)
         self.data_window = self._get_initial_data_window()
-        #self.last_mark_price = self.grabber.get_data(symbol=self.symbol, tframe = self.timeframe, limit = 1)
-        #self.data_window.append(self.last_)
+        # self.last_mark_price = self.grabber.get_data(symbol=self.symbol, tframe = self.timeframe, limit = 1)
+        # self.data_window.append(self.last_)
         self.last_macd = self.data_window.tail(1)
         self.init_time = None
 
-
     def start_futures_stream(self, stream="bnbusdt_perpetual@continuousKline_1m"):
-        #stream = f"{self.symbol}@markPrice@1s"
-        self.stream_name = self.twm.start_futures_multiplex_socket(callback=self.handle_mark_price_message, streams=[stream])
+        # stream = f"{self.symbol}@markPrice@1s"
+        self.stream_name = self.twm.start_futures_multiplex_socket(
+            callback=self.handle_mark_price_message, streams=[stream]
+        )
         return self.stream_name
 
     def handle_mark_price_message(self, msg):
-        #print(f"message type: {msg['stream']}")
-        #print(f"message type: {msg['data']['e']}")
-        #self.data[f"{msg['stream']}"]=msg['data']['k']['c']
+        # print(f"message type: {msg['stream']}")
+        # print(f"message type: {msg['data']['e']}")
+        # self.data[f"{msg['stream']}"]=msg['data']['k']['c']
         self.last_mark_price = float(msg["p"])
 
     def handle_stream_message(self, msg):
-        #print(f"message type: {msg['stream']}")
-        #print(f"message type: {msg['data']['e']}")
-        #self.data[f"{msg['stream']}"]=msg['data']['k']['c']
-        if not bool(msg['data']['k']['x']):
+        # print(f"message type: {msg['stream']}")
+        # print(f"message type: {msg['data']['e']}")
+        # self.data[f"{msg['stream']}"]=msg['data']['k']['c']
+        if not bool(msg["data"]["k"]["x"]):
             new_row = self.grabber.trim_data(msg["data"]["k"]).compute_indicators()
             self.data_window.iloc[[-1]] = new_row
         else:
             self.data_window = self.data_window.drop(self.data_window.iloc[[0]].index)
             self.data_window = self.data_window.append(new_row)
 
-
     def _get_initial_data_window(self):
-        klines = self.grabber.get_data(symbol=self.symbol, tframe = self.timeframe, limit = 2*self.macd_params["window_slow"])
-        last_kline_row = self.grabber.get_data(symbol=self.symbol, tframe = self.timeframe, limit = 1)
+        klines = self.grabber.get_data(
+            symbol=self.symbol,
+            tframe=self.timeframe,
+            limit=2 * self.macd_params["window_slow"],
+        )
+        last_kline_row = self.grabber.get_data(
+            symbol=self.symbol, tframe=self.timeframe, limit=1
+        )
         klines = klines.append(last_kline_row, ignore_index=True)
         c = klines.close
         date = klines.date
@@ -106,18 +117,21 @@ class ATrader:
         df = pd.concat([date, c, macd], axis=1)
         return df
 
+
 # %%
 
+
 class Strategy:
-    def __init__(self,
-                symbol,
-                timeframe,
-                stoploss_parameter,
-                take_profit,
-                entry_window,
-                exit_window,
-                macd_params = {"window_slow": 26, "window_fast": 12, "window_sign": 9},
-                ):
+    def __init__(
+        self,
+        symbol,
+        timeframe,
+        stoploss_parameter,
+        take_profit,
+        entry_window,
+        exit_window,
+        macd_params={"window_slow": 26, "window_fast": 12, "window_sign": 9},
+    ):
         self.symbol = symbol
         self.timeframe = timeframe
         self.stoploss_parameter = stoploss_parameter
@@ -147,9 +161,10 @@ class Strategy:
     def stoploss_check(self, i, buy_price):
         return (self.closes.iloc[i] / buy_price - 1) * 100 <= self.stoploss_parameter
 
+
 # %%
 manager = Manager(api_key, api_secret)
-#bnbusdt_perpetual@continuousKline_1m
+# bnbusdt_perpetual@continuousKline_1m
 manager
 # %%
 strategy = Strategy("BNBUSDT", "15m", -0.33, 3.5, 2, 2)
@@ -176,14 +191,13 @@ manager.twm.stop_socket(mstream)
 manager.data
 
 
-
 # %%
 import numpy as np
 
 df = pd.DataFrame(np.random.rand(10, 10))
 df.tail(1)
 df.iloc[[-1]]
-newrow = df.tail(1)*2
+newrow = df.tail(1) * 2
 df.iloc[[-1]] = newrow
 df.tail(1)
 

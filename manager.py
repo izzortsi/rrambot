@@ -1,5 +1,5 @@
 # %%
-
+import os
 import time
 import pandas as pd
 from binance import ThreadedWebsocketManager
@@ -9,23 +9,18 @@ import pandas_ta as ta
 import numpy as np
 
 # %%
+KEY = os.getenv('API_USER')
+SECRET = os.environ.get('API_PASSWORD')
+api_key = ""
+api_secret = ""
 
-api_key = "tF8GCAOYQ6G8fqgiwPDv3cDGfPOJffrXpYUcgkcEY38UCTRxG8D7fblZwyOFoMEA"
-api_secret = "J4Gp5w0jdg2LICtXt1yY41TXWTOyrWCifCSMdyGtfMgVMVNFVDClnSXV9Tvh7zRT"
-
-int(15 - time.time())
-# %%
-client = Client(api_key=api_key, api_secret=api_secret)
-
-toappend = pd.Series(
-    float(client.futures_mark_price(symbol="BNBUSDT")["markPrice"]))
-client.futures_symbol_ticker(symbol="BNBUSDT")
-klines = DataGrabber(client).get_data(limit=10)
-toappend = DataGrabber(client).get_data(limit=1)
-klines = klines.append(toappend, ignore_index=True)
 
 # %%
 
+# %%
+self.twm = ThreadedWebsocketManager(
+        api_key=api_key, api_secret=api_secret)
+futures_account_trades
 
 class Manager:
     def __init__(self, api_key, api_secret):
@@ -136,12 +131,12 @@ class ATrader:
         3) de qualquer forma, essa é a função que faz os trades, efetivamente
         """
         if self.is_positioned:
-            if strategy.stoploss_check(self.entry_price):
+            if strategy.stoploss_check(self.data_window, self.entry_price):
                 return stop_loss()
-            elif strategy.exit_signal(self.entry_price):
+            elif strategy.exit_signal(self.data_window, self.entry_price):
                 return take_profit()
         else:
-            if strategy.entry_signal(self):
+            if strategy.entry_signal(self.data_window):
                 return take_position()
 
         # if not bool(msg["data"]["k"]["x"]):
@@ -153,12 +148,12 @@ class ATrader:
         #         self.data_window.iloc[[0]].index)
         #     self.data_window = self.data_window.append(new_row)
 
-    def handle_socket_message(self, msg):
-        print(f"stream: {msg['stream']}")
-        print(
-            f"message type: {msg['data']['e']}, close: {msg['data']['k']['c']}, volume: {msg['data']['k']['v']}"
-        )
-        self.data[f"{msg['stream']}"] = msg["data"]["k"]["c"]
+    # def handle_socket_message(self, msg):
+    #     print(f"stream: {msg['stream']}")
+    #     print(
+    #         f"message type: {msg['data']['e']}, close: {msg['data']['k']['c']}, volume: {msg['data']['k']['v']}"
+    #     )
+    #     self.data[f"{msg['stream']}"] = msg["data"]["k"]["c"]
 
     def _get_initial_data_window(self):
         klines = self.grabber.get_data(
