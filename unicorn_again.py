@@ -1,54 +1,41 @@
-from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import (
-    BinanceWebSocketApiManager,
+# %%
+from unicorn_binance_rest_api.unicorn_binance_rest_api_manager import (
+    BinanceRestApiManager as Client,
 )
 import logging
-import time
-import threading
 import os
 
+# for random filenames
+# import random
+# import string
+# import datetime
+
+#
+# today_date = str(datetime.date.today())
+#
+# char_set = string.ascii_uppercase + string.ascii_lowercase
+# log_filename = today_date.join(random.sample(char_set * 6, 8))
+#
 
 # https://docs.python.org/3/library/logging.html#logging-levels
 
-
-def print_stream_data_from_stream_buffer(binance_websocket_api_manager):
-    while True:
-        if binance_websocket_api_manager.is_manager_stopping():
-            exit(0)
-        oldest_stream_data_from_stream_buffer = (
-            binance_websocket_api_manager.pop_stream_data_from_stream_buffer()
-        )
-        if oldest_stream_data_from_stream_buffer is False:
-            time.sleep(0.01)
-        else:
-            print(oldest_stream_data_from_stream_buffer)
-
-
-# configure api key and secret for binance.com
-binance_com_api_key = os.environ.get("API_KEY")
-binance_com_api_secret = os.environ.get("API_SECRET")
-
-# configure api key and secret for binance.je
-
-# create instances of BinanceWebSocketApiManager
-binance_com_websocket_api_manager = BinanceWebSocketApiManager(
-    exchange="binance.com", throw_exception_if_unrepairable=True
-)
-# create the userData streams
-binance_com_user_data_stream_id = binance_com_websocket_api_manager.create_stream(
-    "arr", "!userData", api_key=binance_com_api_key, api_secret=binance_com_api_secret
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename=os.path.basename("__file__") + ".log",
+    format="{asctime} [{levelname:8}] {process} {thread} {module}: {message}",
+    style="{",
 )
 
+api_key = os.environ.get("API_KEY")
+api_secret = os.environ.get("API_SECRET")
 
-# start a worker process to move the received stream_data from the stream_buffer to a print function
-worker_thread = threading.Thread(
-    target=print_stream_data_from_stream_buffer,
-    args=(binance_com_websocket_api_manager,),
-)
-worker_thread.start()
+client = Client(api_key, api_secret, tld="com")
+# %%
 
+# get market depth
+depth = client.get_order_book(symbol="BNBBTC")
+print(f"{depth}")
 
-# monitor the streams
-while True:
-
-    binance_com_websocket_api_manager.print_summary()
-    time.sleep(5)
+# get all symbol prices
+prices = client.get_all_tickers()
+print(f"{prices}")
