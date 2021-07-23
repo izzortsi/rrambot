@@ -1,101 +1,35 @@
 # %%
 import os
 import time
-import pandas as pd
-from binance import ThreadedWebsocketManager, BinanceSocketManager
-from binance.client import Client
-from binance.helpers import round_step_size
-from grabber import DataGrabber
-import pandas_ta as ta
+import threading
 import numpy as np
-import json
-import asyncio
-from binance import AsyncClient
-# %%
+import pandas as pd
+from grabber import DataGrabber
 
-api_key = os.environ.get('API_KEY')
-api_secret = os.environ.get('API_SECRET')
-# %%
-twm = ThreadedWebsocketManager(
-    api_key=api_key, api_secret=api_secret)
-# %%
+from unicorn_binance_rest_api.unicorn_binance_rest_api_manager import (
+    BinanceRestApiManager as Client,
+)
 
-client = Client(api_key=api_key, api_secret=api_secret)
-# %%
-
-# %%
-lkey = client.futures_stream_get_listen_key()
-
-
-# %%client.futures_change_leverage(symbol="ETHUSDT", leverage = leverage)
-
-
-ex_info = client.futures_exchange_info()
-
-
-# %%
-eth_info = ex_info["symbols"][1]
-eth_filters = eth_info["filters"]
-
-price_precision = ex_info["symbols"][1]["pricePrecision"]
-quantity_precision = ex_info["symbols"][1]["quantityPrecision"]
-base_asset_precision = ex_info["symbols"][1]['baseAssetPrecision']
-quote_asset_precision = ex_info["symbols"][1]['quotePrecision']
-
-step_size = float(eth_filters[1]["stepSize"])
-min_qty = float(eth_filters[1]["minQty"])
-min_notional = float(eth_filters[-2]["notional"])
-# %%
-
-#print(json.dumps(eth_filters, indent=2))
-# %%
-
-initial_usdt = 1.00
-leverage = 7
-client.futures_change_leverage(symbol="ETHUSDT", leverage=leverage)
-quantity = round_step_size((initial_usdt * leverage)/mark_price, step_size)
-
-quantity
-assert (initial_usdt * leverage) >= min_notional
-assert quantity >= min_qty
-
-# %%
-
-
-#client.futures_mark_price(symbol="ETHUSDT")
-
-#client.futures_create_order(symbol="ETHUSDT", side="SELL", quantity = 0.001, type = "STOP_MARKET", stopPrice = round_step_size(mark_price*0.99, 0.01),  workingType = "MARK_PRICE" )
-#client.futures_create_order(symbol="ETHUSDT", side="BUY", positionSide = "SHORT", quantity = 0.001, type = "TAKE_PROFIT_MARKET", stopPrice = round_step_size(mark_price*0.993, 0.01),  workingType = "MARK_PRICE" )
-eth = "ETHUSDT"
-# %%
-
-mark_price = float(client.futures_mark_price(symbol="ETHUSDT")["markPrice"])
-mark_price
-twm.start_futures_socket(fun)
-def fun(x): return print(x)
-
-
-# %%
-#new_order = client.futures_create_order(symbol="ETHUSDT", side="SELL", quantity = quantity, type = "MARKET",  workingType = "MARK_PRICE" )
-# %%
-client.futures_position_information(symbol="ETHUSDT")
-#client.futures_change_position_margin(symbol=eth, amount=2.50, type=1)
-
-# %%
-#client.futures_change_position_mode(dualSidePosition="false")
+from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import (
+    BinanceWebSocketApiManager,
+)
 
 
 # %%
 
+api_key = os.environ.get("API_KEY")
+api_secret = os.environ.get("API_SECRET")
+
 # %%
+
+
 class Manager:
     def __init__(self, api_key, api_secret):
         self.data = {}
-        self.client = Client(api_key=api_key, api_secret=api_secret)
-        self.twm = ThreadedWebsocketManager(
-            api_key=api_key, api_secret=api_secret)
-        # start is required to initialise its internal loop
-        self.twm.start()
+        self.client = Client(
+            api_key=api_key, api_secret=api_secret, exchange="binance.com-futures"
+        )
+        self.bwsm = BinanceWebSocketApiManager(exchange="binance.com-futures")
 
     def start_trader(self, strategy):
         trader = ATrader(self, strategy)
@@ -109,10 +43,10 @@ class Manager:
         fecha todos os traders e todas as posições; pra emerg
         """
         if traders == None:
-            #fecha todos os traders
+            # fecha todos os traders
             pass
         else:
-            #fecha só os passados como argumento
+            # fecha só os passados como argumento
             pass
         pass
 
@@ -129,14 +63,16 @@ class Manager:
         """
         pass
 
+
 # %%
 
 
 class ATrader:
     def __init__(self, manager, strategy):
 
+        self.manager = manager
         self.client = manager.client
-        self.twm = manager.twm
+        self.bswm = manager.bswm
 
         self.symbol = strategy.symbol
         self.timeframe = strategy.timeframe
@@ -150,33 +86,32 @@ class ATrader:
         self.data_window = self._get_initial_data_window()
         # self.last_mark_price = self.grabber.get_data(symbol=self.symbol, tframe = self.timeframe, limit = 1)
         # self.data_window.append(self.last_)
-        #self.last_histogram = self.data_window.tail(1).histogram
+        # self.last_histogram = self.data_window.tail(1).histogram
         self.init_time = time.time()
 
         self.is_positioned = False
         self.entry_price = None
 
-    def start_futures_stream(self, stream="bnbusdt_perpetual@continuousKline_1m"):
-        # stream = f"{self.symbol}@markPrice@1s"
-        self.stream_name = self.twm.start_futures_multiplex_socket(
-            callback=self.handle_stream_message, streams=[stream]
+    def _start_futures_stream(self):
+        stream_id = self.bswm.create_stream(
+            ["!markPrice"], "arr@1s", stream_label="!markPrice@arr@1s"
         )
+        # stream = f"{self.symbol}@markPrice@1s"
+        self.stream_name = stream_id
         return self.stream_name
 
     def handle_stream_message(self, msg):
         # print(f"message type: {msg['stream']}")
         # print(f"message type: {msg['data']['e']}")
         # self.data[f"{msg['stream']}"]=msg['data']['k']['c']
-        tf_as_seconds = interval_to_milliseconds(
-            self.strategy.timeframe) * 0.001
+        tf_as_seconds = interval_to_milliseconds(self.strategy.timeframe) * 0.001
 
         now = time.time()
         new_row = self.grabber.trim_data(msg["data"]["k"]).compute_indicators()
 
         if int(now - self.init_time) >= tf_as_seconds:
 
-            self.data_window = self.data_window.drop(
-                self.data_window.iloc[[0]].index)
+            self.data_window = self.data_window.drop(self.data_window.iloc[[0]].index)
 
             self.data_window = self.data_window.append(new_row)
 
@@ -272,21 +207,16 @@ class Strategy:
     def exit_signal(self, data_window, entry_price):
 
         if (
-            (self.data_window.closes / entry_price - 1) *
-            100 >= self.take_profit  # pelo menos `take_profit` de lucro
-        ) and (
-            np.alltrue(data_window.histogram.tail(self.exit_window) > 0)
-        ):
+            (self.data_window.closes / entry_price - 1) * 100
+            >= self.take_profit  # pelo menos `take_profit` de lucro
+        ) and (np.alltrue(data_window.histogram.tail(self.exit_window) > 0)):
             return True
         else:
             return False
 
     def stoploss_check(self, data_window, entry_price):
 
-        return (
-            (data_window.closes / entry_price - 1) *
-            100 <= self.stoploss_parameter
-        )
+        return (data_window.closes / entry_price - 1) * 100 <= self.stoploss_parameter
 
 
 time.time()
@@ -311,8 +241,8 @@ stream = manager.start_stream()
 mstream = manager.start_futures_stream()
 
 # %%
-manager.twm.stop_socket(stream)
-manager.twm.stop_socket(mstream)
+manager.bswm.stop_socket(stream)
+manager.bswm.stop_socket(mstream)
 
 # %%
 
@@ -325,7 +255,7 @@ df = pd.DataFrame(np.random.rand(10, 10))
 df.tail(1)
 df.iloc[[-1]]
 newrow = df.tail(1) * 2
-df.iloc[[-1]] = newrowreturn "tp"
+df.iloc[[-1]] = newrowreturn
 df.tail(1)
 
 df.drop(0)
@@ -349,8 +279,7 @@ def interval_to_milliseconds(interval):
          int value of interval in milliseconds
     """
     ms = None
-    seconds_per_unit = {"m": 60, "h": 60 * 60,
-                        "d": 24 * 60 * 60, "w": 7 * 24 * 60 * 60}
+    seconds_per_unit = {"m": 60, "h": 60 * 60, "d": 24 * 60 * 60, "w": 7 * 24 * 60 * 60}
 
     unit = interval[-1]
     if unit in seconds_per_unit:
