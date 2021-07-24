@@ -171,7 +171,7 @@ class ATrader:
     def process_stream_data(self):
 
         while self.keep_running:
-
+            time.sleep(1)
             if self.bwsm.is_manager_stopping():
                 exit(0)
 
@@ -225,14 +225,11 @@ class ATrader:
                             interval_to_milliseconds(self.strategy.timeframe) * 0.001
                         )
 
-                        # new_closes = self.data_window.close.to_numpy(copy=True)
-                        # new_closes = pd.Series(np.append(new_closes, c))
+                        # print(tf_as_seconds)
 
                         new_close = ohlcv.close
                         self.data_window.close.update(new_close)
-                        # print(new_close)
 
-                        # print(new_closes)
                         macd = ta.macd(self.data_window.close)
 
                         macd.rename(
@@ -243,49 +240,23 @@ class ATrader:
                             },
                             inplace=True,
                         )
-                        # date = np.atleast_2d(dohlcv.date.tail(1).to_numpy())
-                        # close = np.atleast_2d(new_closes.tail(1).to_numpy())
-                        #
-                        # macd_tail = macd.tail(1)
-                        #
-                        # last_macd = np.atleast_2d(macd_tail.macd.to_numpy())
-                        # last_hist = np.atleast_2d(macd_tail.histogram.to_numpy())
-                        # last_signal = np.atleast_2d(macd_tail.signal.to_numpy())
-
-                        # close = new_closes.tail(1)
-                        # macd_tail = macd.tail(1)
-
-                        # last_macd = macd_tail.macd
-                        # last_hist = macd_tail.histogram
-                        # last_signal = macd_tail.signal
-
-                        # date = dohlcv.date.tail(1)
-                        # date.index = close.index
-
-                        # print(date, "\n", close, "\n", last_macd)
-                        # print([date, close, last_macd, last_hist, last_signal])
-                        # print(macd.tail(9))
 
                         date = dohlcv.date
-                        # macd = macd.tail(1)
-                        # print(macd.tail(1))
-                        # print(f"{date.index[-1]}, {macd.index[-1]}")
 
                         new_row = pd.concat(
-                            # [date, close, last_macd, last_hist, last_signal],
                             [date, new_close, macd.tail(1)],
                             axis=1,
                         )
-                        print(new_row)
+
+                        # print(new_row)
 
                         if len(self.data) > 0:
                             self.data[0].update(new_row)
-                            self.data_window.update(new_row)
                         else:
                             self.data.append(new_row)
 
                         # print(f"{self.data[0]} \n {self.data_window.tail(1)}")
-                        print(self.data[0] == self.data_window.tail(1))
+                        # print(self.data[0] == self.data_window.tail(1))
                         """
                         Testar pelas condiçoes, independentemente do tempo
                         """
@@ -295,16 +266,19 @@ class ATrader:
 
                         if int(now - self.init_time) >= tf_as_seconds:
 
-                            self.data_window = self.data_window.drop(
-                                self.data_window.iloc[[0]].index
+                            # self.data_window = self.data_window.drop(
+                            #    self.data_window.iloc[[0]].index
+                            # )
+                            self.data_window.drop(index=[0], axis=0, inplace=True)
+                            self.data_window = self.data_window.append(
+                                new_row, ignore_index=True
                             )
-
-                            self.data_window = self.data_window.append(new_row)
 
                             self.init_time = time.time()
 
                         else:
-                            self.data_window.iloc[[-1]] = new_row
+                            # self.data_window.iloc[[-1]] = new_row
+                            self.data_window.update(new_row)
 
                 except:
                     pass
@@ -438,15 +412,32 @@ class Strategy:
 
 # %%
 manager = Manager(api_key, api_secret)
-strategy = Strategy("macd", "ethusdt", "15m", -0.33, 3.5, 2, 2)
+strategy = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2)
 # %%
 
 trader = manager.start_trader(strategy)
-time.sleep(5)
+time.sleep(65)
 data = trader.data
 # %%
 trader.stop()
 trader.data_window
 # %%
-data
+data[0] == trader.data_window.tail(1)
 # %%
+
+# %%
+
+# %%
+
+df = pd.DataFrame(np.random.random((10, 2)))
+
+df
+new_row = pd.DataFrame(np.random.random((2, 1))).transpose()
+new_row.index = [9]
+new_row
+
+df.drop(index=[0], axis=0, inplace=True)
+df
+df = df.append(new_row, ignore_index=True)
+
+df
