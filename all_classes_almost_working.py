@@ -1,26 +1,41 @@
 # %%
-import ta as ta
-import json
+"""
+A short description.
+
+A bit longer description.
+
+Args:
+    variable (type): description
+
+Returns:
+    type: description
+
+Raises:
+    Exception: description
+
+"""
+
+# import json
+from operator import itemgetter
+from grabber import DataGrabber
+
 import os
 import time
 import threading
 import numpy as np
 import pandas as pd
-from grabber import DataGrabber
 import pandas_ta as ta
+
 
 from unicorn_binance_rest_api.unicorn_binance_rest_api_manager import (
     BinanceRestApiManager as Client,
 )
-
-from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import (
-    BinanceWebSocketApiManager,
-)
 from unicorn_binance_rest_api.unicorn_binance_rest_api_helpers import (
     interval_to_milliseconds,
 )
-
-from operator import itemgetter
+from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import (
+    BinanceWebSocketApiManager,
+)
 
 # %%
 
@@ -38,6 +53,22 @@ api_secret = os.environ.get("API_SECRET")
 
 
 class Manager:
+    """
+    A short description.
+
+    A bit longer description.
+
+    Args:
+        variable (type): description
+
+    Returns:
+        type: description
+
+    Raises:
+        Exception: description
+
+    """
+
     def __init__(self, api_key, api_secret):
         self.traders = {}
         self.client = Client(
@@ -94,6 +125,22 @@ class Manager:
 
 
 class ATrader:
+    """
+    A short description.
+
+    A bit longer description.
+
+    Args:
+        variable (type): description
+
+    Returns:
+        type: description
+
+    Raises:
+        Exception: description
+
+    """
+
     def __init__(self, manager, strategy):
 
         self.manager = manager
@@ -146,6 +193,7 @@ class ATrader:
                         # start_time = pd.to_datetime(
                         #     kline["kline_close_time"], unit="ms"
                         # )
+                        # print(kline_time)
 
                         o = float(kline["open_price"])
                         h = float(kline["high_price"])
@@ -155,6 +203,8 @@ class ATrader:
 
                         num_trades = int(kline["number_of_trades"])
                         is_closed = bool(kline["is_closed"])
+
+                        last_index = self.data_window.index[-1]
 
                         dohlcv = pd.DataFrame(
                             np.atleast_2d(np.array([kline_time, o, h, l, c, v])),
@@ -166,6 +216,7 @@ class ATrader:
                                 "close",
                                 "volume",
                             ],
+                            index=[last_index],
                         )
                         ohlcv = dohlcv.drop(columns="date")
                         # print(dohlcv)
@@ -174,13 +225,15 @@ class ATrader:
                             interval_to_milliseconds(self.strategy.timeframe) * 0.001
                         )
 
-                        # print(dohlcv.close, "\n")
-                        # print(self.data_window.close)
-                        new_closes = self.data_window.close.append(
-                            dohlcv.close, ignore_index=True
-                        )
+                        # new_closes = self.data_window.close.to_numpy(copy=True)
+                        # new_closes = pd.Series(np.append(new_closes, c))
+
+                        new_close = ohlcv.close
+                        self.data_window.close.update(new_close)
+                        print(new_close)
+
                         # print(new_closes)
-                        macd = ta.macd(new_closes)
+                        macd = ta.macd(self.data_window.close)
                         macd.rename(
                             columns={
                                 "MACD_12_26_9": "macd",
@@ -189,15 +242,41 @@ class ATrader:
                             },
                             inplace=True,
                         )
-                        date = dohlcv.date
-                        close = dohlcv.close
+                        # date = np.atleast_2d(dohlcv.date.tail(1).to_numpy())
+                        # close = np.atleast_2d(new_closes.tail(1).to_numpy())
+                        #
+                        # macd_tail = macd.tail(1)
+                        #
+                        # last_macd = np.atleast_2d(macd_tail.macd.to_numpy())
+                        # last_hist = np.atleast_2d(macd_tail.histogram.to_numpy())
+                        # last_signal = np.atleast_2d(macd_tail.signal.to_numpy())
+
+                        close = new_closes.tail(1)
+                        macd_tail = macd.tail(1)
+
+                        last_macd = macd_tail.macd
+                        last_hist = macd_tail.histogram
+                        last_signal = macd_tail.signal
+
+                        date = dohlcv.date.tail(1)
+                        date.index = close.index
+
+                        # print(date, "\n", close, "\n", last_macd)
+                        # print([date, close, last_macd, last_hist, last_signal])
                         # print(macd.tail(9))
                         new_row = pd.concat(
-                            [date, close, macd.tail(1)], axis=1, ignore_index=True
+                            [date, close, last_macd, last_hist, last_signal],
+                            axis=1,
+                            ignore_index=True,
                         )
 
-                        self.data.append(ohlcv)
+                        if len(self.data) > 0:
+                            self.data[0].update(new_row)
+                            self.data_window.update(new_row)
+                        else:
+                            self.data.append(new_row)
 
+                        print(self.data[0] == self.data_window.tail(1))
                         """
                         Testar pelas condiçoes, independentemente do tempo
                         """
@@ -288,6 +367,22 @@ class ATrader:
 
 
 class Strategy:
+    """
+    A short description.
+
+    A bit longer description.
+
+    Args:
+        variable (type): description
+
+    Returns:
+        type: description
+
+    Raises:
+        Exception: description
+
+    """
+
     def __init__(
         self,
         name,
@@ -332,17 +427,15 @@ class Strategy:
 
 # %%
 manager = Manager(api_key, api_secret)
-strategy = Strategy("macd", "bnbusdt", "15m", -0.33, 3.5, 2, 2)
+strategy = Strategy("macd", "ethusdt", "15m", -0.33, 3.5, 2, 2)
 # %%
 
 trader = manager.start_trader(strategy)
 time.sleep(5)
 data = trader.data
 # %%
-data
-# %%
-data
-# %%
-
 trader.stop()
+trader.data_window
+# %%
+data
 # %%
