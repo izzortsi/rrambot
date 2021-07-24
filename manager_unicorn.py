@@ -15,6 +15,10 @@ from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import 
 )
 
 
+def name_trader(strategy):
+    return strategy.name + "_" + strategy.symbol + "_" + strategy.timeframe
+
+
 # %%
 
 api_key = os.environ.get("API_KEY")
@@ -73,6 +77,7 @@ class ATrader:
         self.manager = manager
         self.client = manager.client
         self.bswm = manager.bswm
+        self.name = name_trader(strategy)
 
         self.symbol = strategy.symbol
         self.timeframe = strategy.timeframe
@@ -92,18 +97,14 @@ class ATrader:
         self.is_positioned = False
         self.entry_price = None
 
-    def _start_futures_stream(self):
-        stream_id = self.bswm.create_stream(
-            ["!markPrice"], "arr@1s", stream_label="!markPrice@arr@1s"
-        )
-        # stream = f"{self.symbol}@markPrice@1s"
-        self.stream_name = stream_id
-        return self.stream_name
+        self.data = []
+
+        self.keep_running = True
+        self.stream_id = None
+        self.stream_name = None
 
     def handle_stream_message(self, msg):
-        # print(f"message type: {msg['stream']}")
-        # print(f"message type: {msg['data']['e']}")
-        # self.data[f"{msg['stream']}"]=msg['data']['k']['c']
+
         tf_as_seconds = interval_to_milliseconds(self.strategy.timeframe) * 0.001
 
         now = time.time()
@@ -172,9 +173,46 @@ class ATrader:
         df = pd.concat([date, c, macd], axis=1)
         return df
 
+    def process_stream_data(self, stream_name):
 
-# %%
-time.time()
+        while self.keep_running:
+            if self.bwsm.is_manager_stopping():
+                exit(0)
+            oldest_stream_data_from_stream_buffer = (
+                self.bwsm.pop_stream_data_from_stream_buffer(stream_name)
+            )
+            if oldest_stream_data_from_stream_buffer is False:
+                time.sleep(0.01)
+            else:
+                self.data.append(oldest_stream_data_from_stream_buffer)
+
+    def start_new_stream(self):
+
+        channel = "kline" + "_" + self.strategy.timeframe
+        market = self.strategy.symbol
+
+        stream_name = channel + "@" + market
+
+        stream_id = self.bwsm.create_stream(
+            channel, market, stream_buffer_name=stream_name
+        )
+
+        worker = threading.Thread(
+            target=self.process_stream_data,
+            args=(stream_name,),
+        )
+        worker.start()
+
+        self.stream_name = stream_name
+        self.worker = worker
+        self.stream_id = stream_id
+
+    def stop(self):
+        self.keep_running = False
+        self.bwsm.stop_stream(self.stream_id)
+        self.worker._delete()
+
+
 # %%
 
 
