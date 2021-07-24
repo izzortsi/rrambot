@@ -31,8 +31,6 @@ def name_trader(strategy):
 
 # %%
 
-# %%
-
 api_key = os.environ.get("API_KEY")
 api_secret = os.environ.get("API_SECRET")
 
@@ -161,7 +159,7 @@ class ATrader:
                         dohlcv = pd.DataFrame(
                             np.atleast_2d(np.array([kline_time, o, h, l, c, v])),
                             columns=[
-                                "open_time",
+                                "date",
                                 "open",
                                 "high",
                                 "low",
@@ -169,7 +167,7 @@ class ATrader:
                                 "volume",
                             ],
                         )
-                        ohlcv = dohlcv.drop(columns="open_time")
+                        ohlcv = dohlcv.drop(columns="date")
                         # print(dohlcv)
 
                         tf_as_seconds = (
@@ -183,12 +181,22 @@ class ATrader:
                         )
                         # print(new_closes)
                         macd = ta.macd(new_closes)
+                        macd.rename(
+                            columns={
+                                "MACD_12_26_9": "macd",
+                                "MACDh_12_26_9": "histogram",
+                                "MACDs_12_26_9": "signal",
+                            },
+                            inplace=True,
+                        )
+                        date = dohlcv.date
+                        close = dohlcv.close
                         # print(macd.tail(9))
                         new_row = pd.concat(
-                            [dohlcv, macd.tail(1)], axis=1, ignore_index=True
+                            [date, close, macd.tail(1)], axis=1, ignore_index=True
                         )
 
-                        self.data.append(new_row)
+                        self.data.append(ohlcv)
 
                         """
                         Testar pelas condiçoes, independentemente do tempo
@@ -253,7 +261,8 @@ class ATrader:
         c = klines.close
         date = klines.date
         macd = ta.macd(c)
-        df = pd.concat([date, klines, macd], axis=1)
+        # df = pd.concat([date, klines, macd], axis=1)
+        df = pd.concat([date, c, macd], axis=1)
         return df
 
     def act_on_signal(self):
@@ -330,9 +339,9 @@ trader = manager.start_trader(strategy)
 time.sleep(5)
 data = trader.data
 # %%
-
 data
-
+# %%
+data
 # %%
 
 trader.stop()
