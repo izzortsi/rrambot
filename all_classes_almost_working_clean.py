@@ -243,49 +243,24 @@ class ATrader:
                             },
                             inplace=True,
                         )
-                        # date = np.atleast_2d(dohlcv.date.tail(1).to_numpy())
-                        # close = np.atleast_2d(new_closes.tail(1).to_numpy())
-                        #
-                        # macd_tail = macd.tail(1)
-                        #
-                        # last_macd = np.atleast_2d(macd_tail.macd.to_numpy())
-                        # last_hist = np.atleast_2d(macd_tail.histogram.to_numpy())
-                        # last_signal = np.atleast_2d(macd_tail.signal.to_numpy())
-
-                        # close = new_closes.tail(1)
-                        # macd_tail = macd.tail(1)
-
-                        # last_macd = macd_tail.macd
-                        # last_hist = macd_tail.histogram
-                        # last_signal = macd_tail.signal
-
-                        # date = dohlcv.date.tail(1)
-                        # date.index = close.index
-
-                        # print(date, "\n", close, "\n", last_macd)
-                        # print([date, close, last_macd, last_hist, last_signal])
-                        # print(macd.tail(9))
 
                         date = dohlcv.date
-                        # macd = macd.tail(1)
-                        # print(macd.tail(1))
-                        # print(f"{date.index[-1]}, {macd.index[-1]}")
 
                         new_row = pd.concat(
                             # [date, close, last_macd, last_hist, last_signal],
                             [date, new_close, macd.tail(1)],
                             axis=1,
                         )
+
                         print(new_row)
 
                         if len(self.data) > 0:
                             self.data[0].update(new_row)
-                            self.data_window.update(new_row)
                         else:
                             self.data.append(new_row)
 
                         # print(f"{self.data[0]} \n {self.data_window.tail(1)}")
-                        print(self.data[0] == self.data_window.tail(1))
+                        # print(self.data[0] == self.data_window.tail(1))
                         """
                         Testar pelas condiçoes, independentemente do tempo
                         """
@@ -304,7 +279,8 @@ class ATrader:
                             self.init_time = time.time()
 
                         else:
-                            self.data_window.iloc[[-1]] = new_row
+                            # self.data_window.iloc[[-1]] = new_row
+                            self.data_window.update(new_row)
 
                 except:
                     pass
