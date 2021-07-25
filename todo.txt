@@ -6,3 +6,9 @@
 >>pra isso seria bom fazer os plots e colocar uma seta de entry e uma seta de exit em cada trade q o programa faz
 >o trader, propriamente, que efetivamente faz operaçoes (na binance) segundo alguma estratégia
 >o bot, em si, que roda vários traders assincronamente e os gerencia
+
+
+###
+
+
+>tirar "symbol" como argumento de Strategy e botar como argumento de start_trader

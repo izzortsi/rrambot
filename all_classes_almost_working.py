@@ -292,6 +292,7 @@ class ATrader:
             target=self.process_stream_data,
             args=(),
         )
+        worker.setDaemon(True)
         worker.start()
 
         self.stream_name = stream_name
@@ -301,8 +302,11 @@ class ATrader:
     def stop(self):
         self.keep_running = False
         self.bwsm.stop_stream(self.stream_id)
-        self.worker._delete()
         del self.manager.traders[self.name]
+        self.worker._delete()
+
+    def is_alive(self):
+        return self.worker.is_alive()
 
     def _get_initial_data_window(self):
         klines = self.grabber.get_data(
@@ -317,8 +321,9 @@ class ATrader:
 
         # c = klines.close
         date = klines.date
+
         df = self.grabber.compute_indicators(
-            klines.close, is_macd=True, **strategy.macd_params
+            klines.close, is_macd=True, **self.strategy.macd_params
         )
         # print(df)
         # macd = ta.macd(c)
@@ -347,10 +352,10 @@ class ATrader:
     def live_plot(self):
 
         fig = plt.figure()
+        title = f"live {self.strategy.symbol} price @ binance.com"
+
         fig.canvas.set_window_title(title)
         ax = fig.add_subplot(1, 1, 1)
-
-        print("Please wait a few seconds until enough data has been received!")
 
         def animate(i):
 
@@ -359,13 +364,13 @@ class ATrader:
             xs = data.date
             ys = data.close
             ax.clear()
-            ax.plot(xs, ys)
+            ax.plot(xs, ys, "k")
             plt.xticks(rotation=45, ha="right")
             plt.subplots_adjust(bottom=0.30)
             plt.title(title)
             plt.ylabel("USDT Value")
 
-        ani = animation.FuncAnimation(fig, animate, interval=5)
+        ani = animation.FuncAnimation(fig, animate, interval=1)
         plt.show()
 
 
@@ -431,23 +436,32 @@ class Strategy:
         return (data_window.closes / entry_price - 1) * 100 <= self.stoploss_parameter
 
 
-# %%
-manager = Manager(api_key, api_secret)
+# manager = Manager(api_key, api_secret)
 
 # %%
 
-params = {"fast": 7, "slow": 14, "signal": 5}
-strategy = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
+# params = {"fast": 7, "slow": 14, "signal": 5}
+
+# strategy = Strategy("macd", "ethusdt", "1m", -0.33,
+#                    3.5, 2, 2, macd_params=params)
 
 # %%
 
 # trader = manager.start_trader(strategy)
-# time.sleep(1)
+#
+# trader.worker.daemon
+# time.sleep(5)
+# trader.live_plot()
+# time.sleep(15)
 # data = trader.data
-# %%
 # trader.stop()
-# trader.data_window
 # %%
-# data[0]
-# trader.data_window.tail(1)
-# %%
+
+if __name__ == "__main__":
+
+    manager = Manager(api_key, api_secret)
+    params = {"fast": 7, "slow": 14, "signal": 5}
+
+    strategy1 = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
+
+    strategy2 = Strategy("macd", "bnbusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
