@@ -1,0 +1,3 @@
+2021-07-25 04:49:01,420 INFO ENTRY: E:52    34734.96
+Name: close, dtype: object at t:52   2021-07-25 07:48:00
+Name: date, dtype: datetime64[ns]

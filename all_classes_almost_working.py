@@ -34,8 +34,12 @@ api_key = os.environ.get("API_KEY")
 api_secret = os.environ.get("API_SECRET")
 
 # %%
+if not os.path.exists("logs/"):
+    os.mkdir("logs/")
 
-formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+# %%
+
+formatter = logging.Formatter("%(asctime)s %(message)s")
 
 
 def setup_logger(name, log_file, level=logging.INFO):
@@ -145,9 +149,9 @@ class ATrader:
         self.is_positioned = False
         self.entry_price = None
         self.entry_time = None
-        # logging_init_time = pd.to_datetime(self.init_time, unit="s", utc=False)
+
         self.logger = setup_logger(
-            f"{self.name}-logger", f"{self.name}-{self.init_time}.log"
+            f"{self.name}-logger", f"logs/{self.name}-{self.init_time}.log"
         )
 
     def process_stream_data(self):
@@ -203,15 +207,13 @@ class ATrader:
                             interval_to_milliseconds(self.strategy.timeframe) * 0.001
                         )
 
-                        # print(tf_as_seconds)
-
                         new_close = ohlcv.close
                         self.data_window.close.update(new_close)
 
                         macd = self.grabber.compute_indicators(
                             self.data_window.close, **self.strategy.macd_params
                         )
-                        # print(macd)
+
                         date = dohlcv.date
 
                         new_row = pd.concat(
@@ -297,8 +299,8 @@ class ATrader:
             if self.strategy.stoploss_check(self.data_window, self.entry_price):
 
                 self.is_positioned = False
-                exit_price = self.data_window.close.tail(1)
-                exit_time = self.data_window.date.tail(1)
+                exit_price = self.data_window.close.values[-1]
+                exit_time = self.data_window.date.values[-1]
 
                 profit = exit_price - self.entry_price
                 percentual_profit = (
@@ -321,8 +323,8 @@ class ATrader:
             elif self.strategy.exit_signal(self.data_window, self.entry_price):
 
                 self.is_positioned = False
-                exit_price = self.data_window.close.tail(1)
-                exit_time = self.data_window.date.tail(1)
+                exit_price = self.data_window.close.values[-1]
+                exit_time = self.data_window.date.values[-1]
 
                 profit = exit_price - self.entry_price
                 percentual_profit = (
@@ -344,8 +346,8 @@ class ATrader:
         else:
             if self.strategy.entry_signal(self.data_window):
                 self.is_positioned = True
-                self.entry_price = self.data_window.close.tail(1)
-                self.entry_time = self.data_window.date.tail(1)
+                self.entry_price = self.data_window.close.values[-1]
+                self.entry_time = self.data_window.date.values[-1]
                 self.logger.info(f"ENTRY: E:{self.entry_price} at t:{self.entry_time}")
 
     def live_plot(self):
@@ -407,7 +409,7 @@ class Strategy:
     def exit_signal(self, data_window, entry_price):
 
         if (
-            (self.data_window.closes / entry_price - 1) * 100
+            (self.data_window.closes.values[-1] / entry_price - 1) * 100
             >= self.take_profit  # pelo menos `take_profit` de lucro
         ) and (np.alltrue(data_window.histogram.tail(self.exit_window) > 0)):
             return True
@@ -416,7 +418,9 @@ class Strategy:
 
     def stoploss_check(self, data_window, entry_price):
 
-        return (data_window.closes / entry_price - 1) * 100 <= self.stoploss_parameter
+        return (
+            data_window.closes.values[-1] / entry_price - 1
+        ) * 100 <= self.stoploss_parameter
 
 
 if __name__ == "__main__":
