@@ -287,7 +287,7 @@ class ATrader:
                         """
                         Testar pelas condiçoes, independentemente do tempo
                         """
-                        # self.act_on_signal(self)
+                        self.act_on_signal()
 
                         # print(int(now - self.init_time))
 
@@ -396,7 +396,7 @@ class ATrader:
                                 %Δ: {percentual_profit}%;
                                 Δt: {res_time}.
                                 cumulative profit: {self.cum_profit}.
-                                running time: """
+                                uptime: """
                 )
 
             elif self.strategy.exit_signal(self.data_window, self.entry_price):
@@ -420,7 +420,7 @@ class ATrader:
                                 %Δ: {percentual_profit}%;
                                 Δt: {res_time}.
                                 cumulative profit: {self.cum_profit}.
-                                running time: """
+                                uptime: """
                 )
         else:
             if self.strategy.entry_signal(self.data_window):
