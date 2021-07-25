@@ -25,7 +25,8 @@ import threading
 import numpy as np
 import pandas as pd
 import pandas_ta as ta
-
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 from unicorn_binance_rest_api.unicorn_binance_rest_api_manager import (
     BinanceRestApiManager as Client,
@@ -99,7 +100,7 @@ class Manager:
         """
         fecha todos os traders e todas as posições; pra emerg
         """
-        if traders == None:
+        if traders is None:
             # fecha todos os traders
             pass
         else:
@@ -230,21 +231,14 @@ class ATrader:
                         new_close = ohlcv.close
                         self.data_window.close.update(new_close)
 
-                        macd = ta.macd(self.data_window.close)
-
-                        macd.rename(
-                            columns={
-                                "MACD_12_26_9": "macd",
-                                "MACDh_12_26_9": "histogram",
-                                "MACDs_12_26_9": "signal",
-                            },
-                            inplace=True,
+                        macd = self.grabber.compute_indicators(
+                            self.data_window.close, **self.strategy.macd_params
                         )
-
+                        # print(macd)
                         date = dohlcv.date
 
                         new_row = pd.concat(
-                            [date, new_close, macd.tail(1)],
+                            [date, macd.tail(1)],
                             axis=1,
                         )
 
@@ -264,7 +258,7 @@ class ATrader:
 
                         # print(int(now - self.init_time))
 
-                        if int(now - self.init_time) >= tf_as_seconds:
+                        if int(now - self.init_time) >= tf_as_seconds / 30:
 
                             # self.data_window = self.data_window.drop(
                             #    self.data_window.iloc[[0]].index
@@ -314,7 +308,7 @@ class ATrader:
         klines = self.grabber.get_data(
             symbol=self.strategy.symbol,
             tframe=self.strategy.timeframe,
-            limit=2 * self.macd_params["window_slow"],
+            limit=2 * self.macd_params["slow"],
         )
         last_kline_row = self.grabber.get_data(
             symbol=self.strategy.symbol, tframe=self.strategy.timeframe, limit=1
@@ -323,7 +317,10 @@ class ATrader:
 
         # c = klines.close
         date = klines.date
-        df = self.grabber.compute_indicators(klines)
+        df = self.grabber.compute_indicators(
+            klines.close, is_macd=True, **strategy.macd_params
+        )
+        # print(df)
         # macd = ta.macd(c)
         # df = pd.concat([date, klines, macd], axis=1)
         df = pd.concat([date, df], axis=1)
@@ -346,6 +343,30 @@ class ATrader:
         else:
             if strategy.entry_signal(self.data_window):
                 return take_position()
+
+    def live_plot(self):
+
+        fig = plt.figure()
+        fig.canvas.set_window_title(title)
+        ax = fig.add_subplot(1, 1, 1)
+
+        print("Please wait a few seconds until enough data has been received!")
+
+        def animate(i):
+
+            data = self.data_window
+
+            xs = data.date
+            ys = data.close
+            ax.clear()
+            ax.plot(xs, ys)
+            plt.xticks(rotation=45, ha="right")
+            plt.subplots_adjust(bottom=0.30)
+            plt.title(title)
+            plt.ylabel("USDT Value")
+
+        ani = animation.FuncAnimation(fig, animate, interval=5)
+        plt.show()
 
 
 # %%
@@ -377,7 +398,7 @@ class Strategy:
         take_profit,
         entry_window,
         exit_window,
-        macd_params={"window_slow": 26, "window_fast": 12, "window_sign": 9},
+        macd_params={"fast": 12, "slow": 26, "signal": 9},
     ):
         self.name = name
         self.symbol = symbol
@@ -412,32 +433,21 @@ class Strategy:
 
 # %%
 manager = Manager(api_key, api_secret)
-strategy = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2)
-# %%
-
-trader = manager.start_trader(strategy)
-time.sleep(65)
-data = trader.data
-# %%
-trader.stop()
-trader.data_window
-# %%
-data[0] == trader.data_window.tail(1)
-# %%
 
 # %%
 
+params = {"fast": 7, "slow": 14, "signal": 5}
+strategy = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
+
 # %%
 
-df = pd.DataFrame(np.random.random((10, 2)))
-
-df
-new_row = pd.DataFrame(np.random.random((2, 1))).transpose()
-new_row.index = [9]
-new_row
-
-df.drop(index=[0], axis=0, inplace=True)
-df
-df = df.append(new_row, ignore_index=True)
-
-df
+# trader = manager.start_trader(strategy)
+# time.sleep(1)
+# data = trader.data
+# %%
+# trader.stop()
+# trader.data_window
+# %%
+# data[0]
+# trader.data_window.tail(1)
+# %%

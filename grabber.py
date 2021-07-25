@@ -36,28 +36,31 @@ class DataGrabber:
         DOHLCV.columns = ["date", "open", "high", "low", "close", "volume"]
         return DOHLCV
 
-    def compute_indicators(self, ohlcv, is_macd=True, indicators=[]):
-
-        c = ohlcv["close"]
-        h = ohlcv["high"]
-        l = ohlcv["low"]
-        v = ohlcv["volume"]
+    def compute_indicators(self, ohlcv, is_macd=True, indicators=[], **params):
 
         if is_macd:
-            macd = ta.macd(c)
+
+            c = ohlcv
+            values = [str(value) for value in list(params.values())]
+            macd = ta.macd(c, **params)
+            lengths = "_".join(values)
             macd.rename(
                 columns={
-                    "MACD_12_26_9": "macd",
-                    "MACDh_12_26_9": "histogram",
-                    "MACDs_12_26_9": "signal",
+                    f"MACD_{lengths}": "macd",
+                    f"MACDh_{lengths}": "histogram",
+                    f"MACDs_{lengths}": "signal",
                 },
                 inplace=True,
             )
 
             df = pd.concat([c, macd], axis=1)
             return df
-
         else:
+
+            c = ohlcv["close"]
+            h = ohlcv["high"]
+            l = ohlcv["low"]
+            v = ohlcv["volume"]
 
             cs = ta.vwma(h, v, length=3)
             cs.rename("csup", inplace=True)
@@ -84,11 +87,17 @@ def futures_mark_price_klines(self, **params):
 
 
 Client.futures_mark_price_klines = futures_mark_price_klines
-client = Client()
+
+
+# client = Client()
 # client.futures_continuous_klines = futures_continuous_klines
-dg = DataGrabber(client)
+# dg = DataGrabber(client)
 # %%
 
-df = dg.get_data()
-df
+# df = dg.get_data()
+# close = df.close
+
+# params = {"fast": 7, "slow": 14, "signal": 5}
+# dg.compute_indicators(df.close, is_macd=True, fast=7, slow=14, signal=5)
+# dg.compute_indicators(df.close, is_macd=True, **params)
 # %%
