@@ -1,32 +1,12 @@
 # %%
-"""
-A short description.
-
-A bit longer description.
-
-Args:
-    variable (type): description
-
-Returns:
-    type: description
-
-Raises:
-    Exception: description
-
-"""
-
-# import json
-from operator import itemgetter
 from grabber import DataGrabber
 
 import logging
 import os
 import time
-import dateparser
 import threading
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -49,11 +29,11 @@ def name_trader(strategy):
 
 # %%
 
+
 api_key = os.environ.get("API_KEY")
 api_secret = os.environ.get("API_SECRET")
 
 # %%
-
 
 formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 
@@ -75,22 +55,6 @@ def setup_logger(name, log_file, level=logging.INFO):
 
 
 class Manager:
-    """
-    A short description.
-
-    A bit longer description.
-
-    Args:
-        variable (type): description
-
-    Returns:
-        type: description
-
-    Raises:
-        Exception: description
-
-    """
-
     def __init__(self, api_key, api_secret):
         self.traders = {}
         self.client = Client(
@@ -152,22 +116,6 @@ class Manager:
 
 
 class ATrader:
-    """
-    A short description.
-
-    A bit longer description.
-
-    Args:
-        variable (type): description
-
-    Returns:
-        type: description
-
-    Raises:
-        Exception: description
-
-    """
-
     def __init__(self, manager, strategy):
 
         self.manager = manager
@@ -215,7 +163,7 @@ class ATrader:
 
             if oldest_stream_data_from_stream_buffer is False:
                 time.sleep(0.01)
-            # elif oldest_stream_data_from_stream_buffer["event_type"] == "kline":
+
             else:
                 try:
                     if oldest_stream_data_from_stream_buffer["event_type"] == "kline":
@@ -223,11 +171,7 @@ class ATrader:
                         kline = oldest_stream_data_from_stream_buffer["kline"]
 
                         now = time.time()
-                        kline_time = pd.to_datetime(now, unit="s", utc=True)
-                        # start_time = pd.to_datetime(
-                        #     kline["kline_close_time"], unit="ms"
-                        # )
-                        # print(kline_time)
+                        kline_time = pd.to_datetime(now, unit="s", utc=False)
 
                         o = float(kline["open_price"])
                         h = float(kline["high_price"])
@@ -275,38 +219,18 @@ class ATrader:
                             axis=1,
                         )
 
-                        # print(new_row)
-
-                        if len(self.data) > 0:
-                            self.data[0].update(new_row)
-                        else:
-                            self.data.append(new_row)
-
-                        # print(f"{self.data[0]} \n {self.data_window.tail(1)}")
-                        # print(self.data[0] == self.data_window.tail(1))
-                        """
-                        Testar pelas condiçoes, independentemente do tempo
-                        """
                         self.act_on_signal()
-
-                        # print(int(now - self.init_time))
 
                         if int(now - self.init_time) >= tf_as_seconds / 1:
 
-                            # self.data_window = self.data_window.drop(
-                            #    self.data_window.iloc[[0]].index
-                            # )
                             self.data_window.drop(index=[0], axis=0, inplace=True)
                             self.data_window = self.data_window.append(
                                 new_row, ignore_index=True
                             )
-                            # self.logger.info(
-                            #     f"new window added:\n {self.data_window.tail(2)}"
-                            # )
+
                             self.init_time = time.time()
 
                         else:
-                            # self.data_window.iloc[[-1]] = new_row
                             self.data_window.update(new_row)
 
                 except:
@@ -354,15 +278,12 @@ class ATrader:
         )
         klines = klines.append(last_kline_row, ignore_index=True)
 
-        # c = klines.close
         date = klines.date
 
         df = self.grabber.compute_indicators(
             klines.close, is_macd=True, **self.strategy.macd_params
         )
-        # print(df)
-        # macd = ta.macd(c)
-        # df = pd.concat([date, klines, macd], axis=1)
+
         df = pd.concat([date, df], axis=1)
         return df
 
@@ -370,9 +291,7 @@ class ATrader:
         """
         aqui eu tenho que
         1) mudar o sinal de entrada pra incluir as duas direçoes
-        2) ver se realmente preciso dessas funçoes ou se dá pra deixar
-        toda a operação dentro dessa mesma
-        3) de qualquer forma, essa é a função que faz os trades, efetivamente
+        2) essa é a função que faz os trades, efetivamente. falta isso
         """
         if self.is_positioned:
             if self.strategy.stoploss_check(self.data_window, self.entry_price):
@@ -458,22 +377,6 @@ class ATrader:
 
 
 class Strategy:
-    """
-    A short description.
-
-    A bit longer description.
-
-    Args:
-        variable (type): description
-
-    Returns:
-        type: description
-
-    Raises:
-        Exception: description
-
-    """
-
     def __init__(
         self,
         name,
@@ -516,34 +419,12 @@ class Strategy:
         return (data_window.closes / entry_price - 1) * 100 <= self.stoploss_parameter
 
 
-# manager = Manager(api_key, api_secret)
-
-# %%
-
-# params = {"fast": 7, "slow": 14, "signal": 5}
-
-# strategy = Strategy("macd", "ethusdt", "1m", -0.33,
-#                    3.5, 2, 2, macd_params=params)
-
-# %%
-
-# trader = manager.start_trader(strategy)
-#
-# trader.worker.daemon
-# time.sleep(5)
-# trader.live_plot()
-# time.sleep(15)
-# data = trader.data
-# trader.stop()
-# %%
-
 if __name__ == "__main__":
 
     manager = Manager(api_key, api_secret)
     params = {"fast": 7, "slow": 14, "signal": 5}
 
     # strategy1 = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
-
     # strategy2 = Strategy("macd", "bnbusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
 
     strategy1 = Strategy("macd", "ethusdt", "1m", -0.2, 1.5, 2, 1)
@@ -551,22 +432,7 @@ if __name__ == "__main__":
     strategy3 = Strategy("macd", "btcusdt", "1m", -0.2, 1.5, 2, 1)
 
     trader1 = manager.start_trader(strategy1)
-    time.sleep(10)
+    time.sleep(5)
     trader2 = manager.start_trader(strategy2)
     time.sleep(10)
     trader3 = manager.start_trader(strategy3)
-
-# %%
-
-# manager.stop()
-# %%
-
-# %%
-
-# trader1.stop()
-# trader1.is_alive()
-# manager.traders
-# trader2.stop()
-# trader2.is_alive()
-
-# %%
