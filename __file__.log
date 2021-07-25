@@ -1,8 +1,0 @@
-2021-07-22 20:09:19,684 [INFO    ] 53050 140238832965440 unicorn_binance_rest_api_manager: New instance of unicorn-binance-rest-api_1.2.0-python_3.9.6 on Linux 5.12.16-1-MANJARO started ...
-2021-07-22 20:09:19,690 [DEBUG   ] 53050 140238832965440 connectionpool: Starting new HTTPS connection (1): api.binance.com:443
-2021-07-22 20:09:21,165 [DEBUG   ] 53050 140238832965440 connectionpool: https://api.binance.com:443 "GET /api/v3/ping HTTP/1.1" 200 2
-2021-07-22 20:09:21,471 [DEBUG   ] 53050 140238832965440 connectionpool: https://api.binance.com:443 "GET /api/v3/time HTTP/1.1" 200 28
-2021-07-22 20:09:21,478 [DEBUG   ] 53050 140238832965440 connectionpool: Starting new HTTPS connection (1): api.github.com:443
-2021-07-22 20:09:22,036 [DEBUG   ] 53050 140238832965440 connectionpool: https://api.github.com:443 "GET /repos/oliver-zehentleitner/unicorn-binance-rest-api/releases/latest HTTP/1.1" 200 1025
-2021-07-22 20:09:24,843 [DEBUG   ] 53050 140238832965440 connectionpool: https://api.binance.com:443 "GET /api/v3/depth?symbol=BNBBTC HTTP/1.1" 200 1203
-2021-07-22 20:09:25,680 [DEBUG   ] 53050 140238832965440 connectionpool: https://api.binance.com:443 "GET /api/v3/ticker/price HTTP/1.1" 200 11867
