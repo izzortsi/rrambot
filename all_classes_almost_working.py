@@ -154,6 +154,57 @@ class ATrader:
             f"{self.name}-logger", f"logs/{self.name}-{self.init_time}.log"
         )
 
+    def start_new_stream(self):
+
+        channel = "kline" + "_" + self.strategy.timeframe
+        market = self.strategy.symbol
+
+        stream_name = channel + "@" + market
+
+        stream_id = self.bwsm.create_stream(
+            channel, market, stream_buffer_name=stream_name
+        )
+
+        worker = threading.Thread(
+            target=self.process_stream_data,
+            args=(),
+        )
+        worker.setDaemon(True)
+        worker.start()
+
+        self.stream_name = stream_name
+        self.worker = worker
+        self.stream_id = stream_id
+
+    def stop(self):
+        self.keep_running = False
+        self.bwsm.stop_stream(self.stream_id)
+        del self.manager.traders[self.name]
+        # self.worker._delete()
+
+    def is_alive(self):
+        return self.worker.is_alive()
+
+    def _get_initial_data_window(self):
+        klines = self.grabber.get_data(
+            symbol=self.strategy.symbol,
+            tframe=self.strategy.timeframe,
+            limit=2 * self.macd_params["slow"],
+        )
+        last_kline_row = self.grabber.get_data(
+            symbol=self.strategy.symbol, tframe=self.strategy.timeframe, limit=1
+        )
+        klines = klines.append(last_kline_row, ignore_index=True)
+
+        date = klines.date
+
+        df = self.grabber.compute_indicators(
+            klines.close, is_macd=True, **self.strategy.macd_params
+        )
+
+        df = pd.concat([date, df], axis=1)
+        return df
+
     def process_stream_data(self):
 
         while self.keep_running:
@@ -221,8 +272,6 @@ class ATrader:
                             axis=1,
                         )
 
-                        self.act_on_signal()
-
                         if int(now - self.init_time) >= tf_as_seconds / 1:
 
                             self.data_window.drop(index=[0], axis=0, inplace=True)
@@ -235,59 +284,10 @@ class ATrader:
                         else:
                             self.data_window.update(new_row)
 
+                        self.act_on_signal()
+
                 except:
                     pass
-
-    def start_new_stream(self):
-
-        channel = "kline" + "_" + self.strategy.timeframe
-        market = self.strategy.symbol
-
-        stream_name = channel + "@" + market
-
-        stream_id = self.bwsm.create_stream(
-            channel, market, stream_buffer_name=stream_name
-        )
-
-        worker = threading.Thread(
-            target=self.process_stream_data,
-            args=(),
-        )
-        worker.setDaemon(True)
-        worker.start()
-
-        self.stream_name = stream_name
-        self.worker = worker
-        self.stream_id = stream_id
-
-    def stop(self):
-        self.keep_running = False
-        self.bwsm.stop_stream(self.stream_id)
-        del self.manager.traders[self.name]
-        # self.worker._delete()
-
-    def is_alive(self):
-        return self.worker.is_alive()
-
-    def _get_initial_data_window(self):
-        klines = self.grabber.get_data(
-            symbol=self.strategy.symbol,
-            tframe=self.strategy.timeframe,
-            limit=2 * self.macd_params["slow"],
-        )
-        last_kline_row = self.grabber.get_data(
-            symbol=self.strategy.symbol, tframe=self.strategy.timeframe, limit=1
-        )
-        klines = klines.append(last_kline_row, ignore_index=True)
-
-        date = klines.date
-
-        df = self.grabber.compute_indicators(
-            klines.close, is_macd=True, **self.strategy.macd_params
-        )
-
-        df = pd.concat([date, df], axis=1)
-        return df
 
     def act_on_signal(self):
         """
