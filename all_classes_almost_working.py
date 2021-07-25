@@ -19,8 +19,10 @@ Raises:
 from operator import itemgetter
 from grabber import DataGrabber
 
+import logging
 import os
 import time
+import dateparser
 import threading
 import numpy as np
 import pandas as pd
@@ -49,6 +51,25 @@ def name_trader(strategy):
 
 api_key = os.environ.get("API_KEY")
 api_secret = os.environ.get("API_SECRET")
+
+# %%
+
+
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+
+
+def setup_logger(name, log_file, level=logging.INFO):
+    """To setup as many loggers as you want"""
+
+    handler = logging.FileHandler(log_file)
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
+
 
 # %%
 
@@ -102,11 +123,16 @@ class Manager:
         """
         if traders is None:
             # fecha todos os traders
-            pass
+            for name, trader in self.get_traders():
+                trader.stop()
         else:
             # fecha só os passados como argumento
             pass
         pass
+
+    def stop(self):
+        self.close_traders()
+        self.bwsm.stop_manager_with_all_streams()
 
     def performance_check(self):
         pass
@@ -150,6 +176,8 @@ class ATrader:
         self.strategy = strategy
         self.name = name_trader(strategy)
         self.data = []
+        self.profits = []
+        self.cum_profit = 0
 
         self.stoploss_parameter = strategy.stoploss_parameter
         self.take_profit = strategy.take_profit
@@ -168,6 +196,11 @@ class ATrader:
 
         self.is_positioned = False
         self.entry_price = None
+        self.entry_time = None
+        # logging_init_time = pd.to_datetime(self.init_time, unit="s", utc=False)
+        self.logger = setup_logger(
+            f"{self.name}-logger", f"{self.name}-{self.init_time}.log"
+        )
 
     def process_stream_data(self):
 
@@ -190,7 +223,7 @@ class ATrader:
                         kline = oldest_stream_data_from_stream_buffer["kline"]
 
                         now = time.time()
-                        kline_time = pd.to_datetime(now, unit="s")
+                        kline_time = pd.to_datetime(now, unit="s", utc=True)
                         # start_time = pd.to_datetime(
                         #     kline["kline_close_time"], unit="ms"
                         # )
@@ -258,7 +291,7 @@ class ATrader:
 
                         # print(int(now - self.init_time))
 
-                        if int(now - self.init_time) >= tf_as_seconds / 30:
+                        if int(now - self.init_time) >= tf_as_seconds / 1:
 
                             # self.data_window = self.data_window.drop(
                             #    self.data_window.iloc[[0]].index
@@ -267,7 +300,9 @@ class ATrader:
                             self.data_window = self.data_window.append(
                                 new_row, ignore_index=True
                             )
-
+                            # self.logger.info(
+                            #     f"new window added:\n {self.data_window.tail(2)}"
+                            # )
                             self.init_time = time.time()
 
                         else:
@@ -303,7 +338,7 @@ class ATrader:
         self.keep_running = False
         self.bwsm.stop_stream(self.stream_id)
         del self.manager.traders[self.name]
-        self.worker._delete()
+        # self.worker._delete()
 
     def is_alive(self):
         return self.worker.is_alive()
@@ -339,15 +374,60 @@ class ATrader:
         toda a operação dentro dessa mesma
         3) de qualquer forma, essa é a função que faz os trades, efetivamente
         """
-        return
         if self.is_positioned:
-            if strategy.stoploss_check(self.data_window, self.entry_price):
-                return stop_loss()
-            elif strategy.exit_signal(self.data_window, self.entry_price):
-                return take_profit()
+            if self.strategy.stoploss_check(self.data_window, self.entry_price):
+
+                self.is_positioned = False
+                exit_price = self.data_window.close.tail(1)
+                exit_time = self.data_window.date.tail(1)
+
+                profit = exit_price - self.entry_price
+                percentual_profit = (
+                    (exit_price - self.entry_price) / self.entry_price
+                ) * 100
+
+                resolution_time = exit_time - self.entry_time
+
+                self.profits.append([profit, percentual_profit, resolution_time])
+                self.cum_profit += percentual_profit
+                self.logger.info(
+                    f"""STOP-LOSS: E:{self.entry_price} - X:{exit_price}.
+                                absΔ: {profit};
+                                %Δ: {percentual_profit}%;
+                                Δt: {res_time}.
+                                cumulative profit: {self.cum_profit}.
+                                running time: """
+                )
+
+            elif self.strategy.exit_signal(self.data_window, self.entry_price):
+
+                self.is_positioned = False
+                exit_price = self.data_window.close.tail(1)
+                exit_time = self.data_window.date.tail(1)
+
+                profit = exit_price - self.entry_price
+                percentual_profit = (
+                    (exit_price - self.entry_price) / self.entry_price
+                ) * 100
+
+                resolution_time = exit_time - self.entry_time
+
+                self.profits.append([profit, percentual_profit, resolution_time])
+                self.cum_profit += percentual_profit
+                self.logger.info(
+                    f"""PROFIT: E:{self.entry_price} - X:{exit_price}.
+                                absΔ: {profit};
+                                %Δ: {percentual_profit}%;
+                                Δt: {res_time}.
+                                cumulative profit: {self.cum_profit}.
+                                running time: """
+                )
         else:
-            if strategy.entry_signal(self.data_window):
-                return take_position()
+            if self.strategy.entry_signal(self.data_window):
+                self.is_positioned = True
+                self.entry_price = self.data_window.close.tail(1)
+                self.entry_time = self.data_window.date.tail(1)
+                self.logger.info(f"ENTRY: E:{self.entry_price} at t:{self.entry_time}")
 
     def live_plot(self):
 
@@ -462,6 +542,31 @@ if __name__ == "__main__":
     manager = Manager(api_key, api_secret)
     params = {"fast": 7, "slow": 14, "signal": 5}
 
-    strategy1 = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
+    # strategy1 = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
 
-    strategy2 = Strategy("macd", "bnbusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
+    # strategy2 = Strategy("macd", "bnbusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
+
+    strategy1 = Strategy("macd", "ethusdt", "1m", -0.2, 1.5, 2, 1)
+    strategy2 = Strategy("macd", "bnbusdt", "1m", -0.2, 1.5, 2, 1)
+    strategy3 = Strategy("macd", "btcusdt", "1m", -0.2, 1.5, 2, 1)
+
+    trader1 = manager.start_trader(strategy1)
+    time.sleep(10)
+    trader2 = manager.start_trader(strategy2)
+    time.sleep(10)
+    trader3 = manager.start_trader(strategy3)
+
+# %%
+
+# manager.stop()
+# %%
+
+# %%
+
+# trader1.stop()
+# trader1.is_alive()
+# manager.traders
+# trader2.stop()
+# trader2.is_alive()
+
+# %%

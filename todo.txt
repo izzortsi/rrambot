@@ -12,3 +12,6 @@
 
 
 >tirar "symbol" como argumento de Strategy e botar como argumento de start_trader
+>colocar o ATrader como subclass de Thread?
+>estender pra short/long
+>calcular lucro com leveraging

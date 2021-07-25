@@ -1,0 +1,56 @@
+(0) comprou a 2129.74 em 2021-07-24 04:54:00.
+(0) STOP-LOSS: Vendeu a 2125.05 em 2021-07-24 05:07:00. Diferença absoluta de: -4.6899999999996; Diferença percentual: -0.2202146740916544%. Tempo de resolução: 0 days 00:13:00.
+(1) comprou a 2126.71 em 2021-07-24 05:08:00.
+(1) STOP-LOSS: Vendeu a 2120.5 em 2021-07-24 08:12:00. Diferença absoluta de: -6.210000000000036; Diferença percentual: -0.29200031974270285%. Tempo de resolução: 0 days 03:04:00.
+(2) comprou a 2117.27 em 2021-07-24 08:13:00.
+(2) vendeu a 2154.37 em 2021-07-24 10:30:00. Diferença absoluta de: 37.09999999999991; Diferença percentual: 1.7522564434389525%. Tempo de resolução: 0 days 02:17:00.
+(3) comprou a 2153.0 em 2021-07-24 10:45:00.
+(3) STOP-LOSS: Vendeu a 2146.36 em 2021-07-24 11:00:00. Diferença absoluta de: -6.639999999999873; Diferença percentual: -0.3084068741291162%. Tempo de resolução: 0 days 00:15:00.
+(4) comprou a 2146.41 em 2021-07-24 11:01:00.
+(4) STOP-LOSS: Vendeu a 2141.31 em 2021-07-24 11:28:00. Diferença absoluta de: -5.099999999999909; Diferença percentual: -0.23760604917047115%. Tempo de resolução: 0 days 00:27:00.
+(5) comprou a 2139.83 em 2021-07-24 11:29:00.
+(5) vendeu a 2172.02 em 2021-07-24 14:47:00. Diferença absoluta de: 32.190000000000055; Diferença percentual: 1.5043251099386428%. Tempo de resolução: 0 days 03:18:00.
+(6) comprou a 2165.03 em 2021-07-24 14:55:00.
+(6) STOP-LOSS: Vendeu a 2159.0 em 2021-07-24 15:01:00. Diferença absoluta de: -6.0300000000002; Diferença percentual: -0.2785180805808788%. Tempo de resolução: 0 days 00:06:00.
+(7) comprou a 2158.4 em 2021-07-24 15:02:00.
+(7) STOP-LOSS: Vendeu a 2154.03 em 2021-07-24 15:47:00. Diferença absoluta de: -4.369999999999891; Diferença percentual: -0.2024647887323893%. Tempo de resolução: 0 days 00:45:00.
+(8) comprou a 2154.66 em 2021-07-24 15:48:00.
+(8) STOP-LOSS: Vendeu a 2148.54 em 2021-07-24 16:07:00. Diferença absoluta de: -6.119999999999891; Diferença percentual: -0.28403553228815176%. Tempo de resolução: 0 days 00:19:00.
+(9) comprou a 2149.26 em 2021-07-24 16:08:00.
+(9) vendeu a 2187.77 em 2021-07-24 16:53:00. Diferença absoluta de: 38.50999999999976; Diferença percentual: 1.7917794961986804%. Tempo de resolução: 0 days 00:45:00.
+(10) comprou a 2188.38 em 2021-07-24 17:03:00.
+(10) STOP-LOSS: Vendeu a 2182.5 em 2021-07-24 17:43:00. Diferença absoluta de: -5.880000000000109; Diferença percentual: -0.26869190908343654%. Tempo de resolução: 0 days 00:40:00.
+(11) comprou a 2182.98 em 2021-07-24 17:44:00.
+(11) STOP-LOSS: Vendeu a 2178.3 em 2021-07-24 18:48:00. Diferença absoluta de: -4.679999999999836; Diferença percentual: -0.21438583954043722%. Tempo de resolução: 0 days 01:04:00.
+(12) comprou a 2178.68 em 2021-07-24 18:49:00.
+(12) STOP-LOSS: Vendeu a 2171.77 em 2021-07-24 19:00:00. Diferença absoluta de: -6.9099999999998545; Diferença percentual: -0.3171645216369478%. Tempo de resolução: 0 days 00:11:00.
+(13) comprou a 2170.95 em 2021-07-24 19:01:00.
+(13) STOP-LOSS: Vendeu a 2166.23 em 2021-07-24 19:04:00. Diferença absoluta de: -4.7199999999998; Diferença percentual: -0.21741633846932448%. Tempo de resolução: 0 days 00:03:00.
+(14) comprou a 2167.88 em 2021-07-24 19:05:00.
+(14) STOP-LOSS: Vendeu a 2162.6 em 2021-07-24 19:24:00. Diferença absoluta de: -5.2800000000002; Diferença percentual: -0.2435559163791446%. Tempo de resolução: 0 days 00:19:00.
+(15) comprou a 2163.69 em 2021-07-24 19:25:00.
+(15) STOP-LOSS: Vendeu a 2157.21 em 2021-07-24 19:44:00. Diferença absoluta de: -6.480000000000018; Diferença percentual: -0.2994883740277035%. Tempo de resolução: 0 days 00:19:00.
+(16) comprou a 2148.61 em 2021-07-24 19:47:00.
+(16) STOP-LOSS: Vendeu a 2143.58 em 2021-07-24 19:49:00. Diferença absoluta de: -5.0300000000002; Diferença percentual: -0.23410483987322964%. Tempo de resolução: 0 days 00:02:00.
+(17) comprou a 2142.47 em 2021-07-24 19:50:00.
+(17) STOP-LOSS: Vendeu a 2136.21 em 2021-07-24 20:25:00. Diferença absoluta de: -6.2599999999997635; Diferença percentual: -0.29218612162596275%. Tempo de resolução: 0 days 00:35:00.
+(18) comprou a 2133.09 em 2021-07-24 20:26:00.
+(18) vendeu a 2166.16 em 2021-07-24 21:46:00. Diferença absoluta de: 33.06999999999971; Diferença percentual: 1.550333084867479%. Tempo de resolução: 0 days 01:20:00.
+(19) comprou a 2167.6 em 2021-07-24 21:58:00.
+(19) STOP-LOSS: Vendeu a 2162.73 em 2021-07-24 22:03:00. Diferença absoluta de: -4.869999999999891; Diferença percentual: -0.2246724487912849%. Tempo de resolução: 0 days 00:05:00.
+(20) comprou a 2162.02 em 2021-07-24 22:04:00.
+(20) STOP-LOSS: Vendeu a 2156.96 em 2021-07-24 22:12:00. Diferença absoluta de: -5.059999999999945; Diferença percentual: -0.2340403881555187%. Tempo de resolução: 0 days 00:08:00.
+(21) comprou a 2159.18 em 2021-07-24 22:13:00.
+(21) vendeu a 2193.55 em 2021-07-25 00:22:00. Diferença absoluta de: 34.370000000000346; Diferença percentual: 1.5918080011856512%. Tempo de resolução: 0 days 02:09:00.
+(22) comprou a 2176.04 em 2021-07-25 00:28:00.
+(22) STOP-LOSS: Vendeu a 2171.02 em 2021-07-25 00:39:00. Diferença absoluta de: -5.019999999999982; Diferença percentual: -0.23069428870792735%. Tempo de resolução: 0 days 00:11:00.
+(23) comprou a 2167.39 em 2021-07-25 00:40:00.
+(23) STOP-LOSS: Vendeu a 2159.33 em 2021-07-25 00:43:00. Diferença absoluta de: -8.059999999999945; Diferença percentual: -0.37187585067754053%. Tempo de resolução: 0 days 00:03:00.
+(24) comprou a 2155.8 em 2021-07-25 00:44:00.
+(24) STOP-LOSS: Vendeu a 2147.42 em 2021-07-25 00:45:00. Diferença absoluta de: -8.38000000000011; Diferença percentual: -0.38871880508396456%. Tempo de resolução: 0 days 00:01:00.
+(25) comprou a 2148.48 em 2021-07-25 00:46:00.
+(25) STOP-LOSS: Vendeu a 2143.91 em 2021-07-25 01:48:00. Diferença absoluta de: -4.570000000000164; Diferença percentual: -0.21270851951147618%. Tempo de resolução: 0 days 01:02:00.
+(26) comprou a 2145.99 em 2021-07-25 01:49:00.
+(26) STOP-LOSS: Vendeu a 2140.44 em 2021-07-25 01:54:00. Diferença absoluta de: -5.549999999999727; Diferença percentual: -0.2586218947898046%. Tempo de resolução: 0 days 00:05:00.
+(27) comprou a 2142.43 em 2021-07-25 01:55:00.
+Lucro percentual total: 3.790502135629403%.
