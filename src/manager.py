@@ -15,7 +15,7 @@ from src.atrader import ATrader
 
 
 class Manager:
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key, api_secret, rate=1):
         self.traders = {}
         self.client = Client(
             api_key=api_key,
@@ -24,6 +24,7 @@ class Manager:
         self.bwsm = BinanceWebSocketApiManager(
             output_default="UnicornFy", exchange="binance.com-futures"
         )
+        self.rate = rate  # debbug purposes. will be removed
 
     def start_trader(self, strategy, symbol):
 

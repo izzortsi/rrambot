@@ -27,22 +27,26 @@ class Strategy:
         else:
             return False
 
-    def exit_signal(self, data_window, entry_price):
+    def exit_signal(self, trader, data_window, entry_price):
+
+        # trader.logger.info(
+        #     f"exit check, {(data_window.close.values[-1] / entry_price - 1) * 100}"
+        # )
 
         if (
-            (data_window.closes.values[-1] / entry_price - 1) * 100
+            (data_window.close.values[-1] / entry_price - 1) * 100
             >= self.take_profit  # pelo menos `take_profit` de lucro
         ) and (np.alltrue(data_window.histogram.tail(self.exit_window) > 0)):
             return True
         else:
             return False
 
-    def stoploss_check(self, data_window, entry_price):
+    def stoploss_check(self, trader, data_window, entry_price):
 
         value_check = (
-            data_window.closes.values[-1] / entry_price - 1
+            data_window.close.values[-1] / entry_price - 1
         ) * 100 <= self.stoploss_parameter
 
-        print(f"value check {value_check}")
+        # trader.logger.info(f"value check: {value_check}")
 
         return value_check

@@ -177,7 +177,10 @@ class ATrader:
                             axis=1,
                         )
 
-                        if int(self.now - self.init_time) >= tf_as_seconds / 1:
+                        if (
+                            int(self.now - self.init_time)
+                            >= tf_as_seconds / self.manager.rate
+                        ):
 
                             self.data_window.drop(index=[0], axis=0, inplace=True)
                             self.data_window = self.data_window.append(
@@ -212,9 +215,12 @@ class ATrader:
         1) mudar o sinal de entrada pra incluir as duas direçoes
         2) essa é a função que faz os trades, efetivamente. falta isso
         """
-        if self.is_positioned:
 
-            if self.strategy.stoploss_check(self.data_window, self.entry_price):
+        if self.is_positioned:
+            # print(
+            #     self.strategy.stoploss_check(self, self.data_window, self.entry_price)
+            # )
+            if self.strategy.stoploss_check(self, self.data_window, self.entry_price):
 
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
@@ -239,7 +245,7 @@ class ATrader:
 
                 self.is_positioned = False
 
-            elif self.strategy.exit_signal(self.data_window, self.entry_price):
+            elif self.strategy.exit_signal(self, self.data_window, self.entry_price):
 
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
