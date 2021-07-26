@@ -3,7 +3,7 @@ from src.grabber import DataGrabber
 
 
 class ATrader:
-    def __init__(self, manager, strategy, symbol, leverage=1):
+    def __init__(self, manager, strategy, symbol, leverage):
 
         self.manager = manager
         self.bwsm = manager.bwsm

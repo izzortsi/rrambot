@@ -26,12 +26,12 @@ class Manager:
         )
         self.rate = rate  # debbug purposes. will be removed
 
-    def start_trader(self, strategy, symbol):
+    def start_trader(self, strategy, symbol, leverage=1):
 
         trader_name = name_trader(strategy, symbol)
 
         if trader_name not in self.get_traders():
-            trader = ATrader(self, strategy, symbol)
+            trader = ATrader(self, strategy, symbol, leverage=leverage)
             trader._start_new_stream()
             self.traders[trader.name] = trader
             return trader
