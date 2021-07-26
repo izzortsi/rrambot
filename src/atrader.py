@@ -26,7 +26,7 @@ class ATrader:
 
         self.grabber = DataGrabber(self.client)
         self.data_window = self._get_initial_data_window()
-        self.data = self.data_window.tail(strategy.macd_params["signal"])
+        self.data = None
 
         self.start_time = time.time()  # wont change, used to compute uptime
         self.init_time = time.time()
@@ -57,7 +57,7 @@ class ATrader:
             self.is_positioned,
         )
         print(
-            f"""uptime: {pd.to_datetime(self.now - self.start_time)};
+            f"""uptime: {pd.to_datetime(self.now) - pd.to_datetime(self.start_time)};
               Δ%: {to_percentual(self.last_price, self.entry_price)}
               status: Alive? Positioned? {status}
               """
@@ -188,15 +188,16 @@ class ATrader:
 
                         else:
                             self.data_window.update(new_row)
-                            self.data = self.data_window.tail(
-                                strategy.macd_params["signal"]
-                            )
+
+                        self.data = self.data_window.tail(
+                            self.strategy.macd_params["signal"]
+                        )
 
                         self._act_on_signal()
 
                         if int(self.now - self.start_time) % 60 == 0:
                             self.logger.info(
-                                f"""uptime: {pd.to_datetime(self.now - self.start_time)};
+                                f"""uptime: {pd.to_datetime(self.now) - pd.to_datetime(self.start_time)};
                                       Δ%: {to_percentual(self.last_price, self.entry_price)}
                                       status: Alive? Positioned? {self.status()}
                                       """
