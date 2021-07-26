@@ -29,24 +29,33 @@ class Strategy:
 
     def exit_signal(self, trader, data_window, entry_price):
 
-        # trader.logger.info(
-        #     f"exit check, {(data_window.close.values[-1] / entry_price - 1) * 100}"
-        # )
+        leveraged_diff = (
+            (data_window.close.values[-1] / entry_price - 1) * 100
+        ) * trader.leverage
 
-        if (
-            ((data_window.close.values[-1] / entry_price - 1) * 100) * trader.leverage
-            >= self.take_profit  # pelo menos `take_profit` de lucro
-        ) and (np.alltrue(data_window.histogram.tail(self.exit_window) > 0)):
+        trader.logger.info(
+            f"""exit check, {leveraged_diff};
+        tp: {self.take_profit};
+        check? {leveraged_diff >= self.take_profit}"""
+        )
+
+        if (leveraged_diff >= self.take_profit) and (
+            np.alltrue(data_window.histogram.tail(self.exit_window) > 0)
+        ):
             return True
         else:
             return False
 
     def stoploss_check(self, trader, data_window, entry_price):
 
-        value_check = (
+        leveraged_diff = (
             (data_window.close.values[-1] / entry_price - 1) * 100
-        ) * trader.leverage <= self.stoploss_parameter
+        ) * trader.leverage
 
-        # trader.logger.info(f"value check: {value_check}")
+        trader.logger.info(
+            f"""sl check: {leveraged_diff};
+        sl: {self.stoploss_parameter}
+        check? {leveraged_diff <= self.stoploss_parameter}"""
+        )
 
-        return value_check
+        return leveraged_diff <= self.stoploss_parameter

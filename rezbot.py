@@ -42,7 +42,7 @@ if __name__ == "__main__":
     # %%
 
     t1 = manager.start_trader(strategy, symbols[0], leverage=leverage)
-    t2 = manager.start_trader(strategy, symbols[1], leverage=leverage)
-    t3 = manager.start_trader(strategy, symbols[2], leverage=leverage)
+    # t2 = manager.start_trader(strategy, symbols[1], leverage=leverage)
+    # t3 = manager.start_trader(strategy, symbols[2], leverage=leverage)
 
 # %%

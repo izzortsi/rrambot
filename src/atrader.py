@@ -68,6 +68,10 @@ class ATrader:
         # print(f"Is alive? {status[0]}; Is positioned? {status[1]}")
         return status
 
+    def _change_position(self):
+        self.is_positioned = not self.is_positioned
+        time.sleep(5)
+
     def _get_initial_data_window(self):
         klines = self.grabber.get_data(
             symbol=self.symbol,
@@ -229,7 +233,7 @@ class ATrader:
             #     self.strategy.stoploss_check(self, self.data_window, self.entry_price)
             # )
             if self.strategy.stoploss_check(self, self.data_window, self.entry_price):
-
+                print("sl")
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
@@ -253,10 +257,10 @@ class ATrader:
                                 uptime: {self.uptime}"""
                 )
 
-                self.is_positioned = False
+                self._change_position()
 
             elif self.strategy.exit_signal(self, self.data_window, self.entry_price):
-
+                print("tp")
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
@@ -278,13 +282,14 @@ class ATrader:
                                 uptime: {self.uptime}"""
                 )
 
-                self.is_positioned = False
+                self._change_position()
+
         else:
             if self.strategy.entry_signal(self.data_window):
-                self.is_positioned = True
                 self.entry_price = self.data_window.close.values[-1]
                 self.entry_time = self.data_window.date.values[-1]
                 self.logger.info(f"ENTRY: E:{self.entry_price} at t:{self.entry_time}")
+                self._change_position()
 
     def live_plot(self):
 
