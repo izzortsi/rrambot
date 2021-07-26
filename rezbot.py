@@ -1,44 +1,34 @@
-import all_classes_almost_working
-from all_classes_almost_working import *
+# %%
 
-import threading
-import time
-import logging
+from src import *
+from src.manager import Manager
+from src.atrader import ATrader
+from src.strategy import Strategy
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="(%(threadName)-9s) %(message)s",
-)
+# %%
 
-
-def wait_for_event(e):
-    logging.debug("wait_for_event starting")
-    event_is_set = e.wait()
-    logging.debug("event set: %s", event_is_set)
-
-
-def wait_for_event_timeout(e, t):
-    while not e.isSet():
-        logging.debug("wait_for_event_timeout starting")
-        event_is_set = e.wait(t)
-        logging.debug("event set: %s", event_is_set)
-        if event_is_set:
-            logging.debug("processing event")
-        else:
-            logging.debug("doing other things")
-
-
+# from src.grabber import *
+# from src.strategy import *
 if __name__ == "__main__":
-    e = threading.Event()
-    t1 = threading.Thread(name="blocking", target=wait_for_event, args=(e,))
-    t1.start()
+    manager = Manager(API_KEY, API_SECRET)
 
-    t2 = threading.Thread(
-        name="non-blocking", target=wait_for_event_timeout, args=(e, 2)
-    )
-    t2.start()
+    # params = {"fast": 7, "slow": 14, "signal": 5}
 
-    logging.debug("Waiting before calling Event.set()")
-    time.sleep(3)
-    e.set()
-    logging.debug("Event is set")
+    # strategy1 = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
+    # strategy2 = Strategy("macd", "bnbusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
+
+    strategy = Strategy("macd", "1m", -0.2, 1.5, 2, 1)
+    # strategy2 = Strategy("macd", "1m", -0.2, 1.5, 2, 1)
+    # strategy3 = Strategy("macd", "1m", -0.2, 1.5, 2, 1)
+
+    # %%
+
+    symbols = ["ethusdt", "bnbusdt", "btcusdt"]
+
+    # %%
+
+    t1 = manager.start_trader(strategy, symbols[0])
+    t2 = manager.start_trader(strategy, symbols[1])
+    t3 = manager.start_trader(strategy, symbols[2])
+
+# %%
