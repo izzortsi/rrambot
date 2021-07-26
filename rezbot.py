@@ -11,12 +11,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-r", "--rate", type=int)
 parser.add_argument("-sl", "--stoploss", default=-0.2, type=float)
 parser.add_argument("-tp", "--takeprofit", default=1.5, type=float)
+parser.add_argument("-L", "--leverage", default=1, type=int)
 args = parser.parse_args()
 
 rate = args.rate
 tp = args.takeprofit
 sl = args.stoploss
-
+leverage = args.leverage
 # %%
 
 # from src.grabber import *
@@ -40,8 +41,8 @@ if __name__ == "__main__":
 
     # %%
 
-    t1 = manager.start_trader(strategy, symbols[0])
-    t2 = manager.start_trader(strategy, symbols[1])
-    t3 = manager.start_trader(strategy, symbols[2])
+    t1 = manager.start_trader(strategy, symbols[0], leverage=leverage)
+    t2 = manager.start_trader(strategy, symbols[1], leverage=leverage)
+    t3 = manager.start_trader(strategy, symbols[2], leverage=leverage)
 
 # %%

@@ -3,13 +3,14 @@ from src.grabber import DataGrabber
 
 
 class ATrader:
-    def __init__(self, manager, strategy, symbol):
+    def __init__(self, manager, strategy, symbol, leverage=1):
 
         self.manager = manager
         self.bwsm = manager.bwsm
         self.client = manager.client
         self.strategy = strategy
         self.symbol = symbol
+        self.leverage = leverage
         self.name = name_trader(strategy, self.symbol)
         self.profits = []
         self.cum_profit = 0
@@ -37,6 +38,7 @@ class ATrader:
         self.entry_time = None
         self.last_price = None
         self.now_time = None
+        self.uptime = None
 
         self.logger = setup_logger(
             f"{self.name}-logger", f"logs/{self.name}-{self.init_time}.log"
@@ -58,7 +60,8 @@ class ATrader:
         )
         print(
             f"""uptime: {pd.to_datetime(self.now) - pd.to_datetime(self.start_time)};
-              Δ%: {to_percentual(self.last_price, self.entry_price)}
+              Δ%*leverage: {to_percentual(self.last_price, self.entry_price) * self.leverage}
+              leverage: {self.leverage};
               status: Alive? Positioned? {status}
               """
         )
@@ -192,16 +195,21 @@ class ATrader:
                         else:
                             self.data_window.update(new_row)
 
-                        self.data = self.data_window.tail(
-                            self.strategy.macd_params["signal"]
+                            self.data = self.data_window.tail(
+                                self.strategy.macd_params["signal"]
+                            )
+
+                        self.uptime = pd.to_datetime(self.now) - pd.to_datetime(
+                            self.start_time
                         )
 
                         self._act_on_signal()
 
                         if int(self.now - self.start_time) % 60 == 0:
                             self.logger.info(
-                                f"""uptime: {pd.to_datetime(self.now) - pd.to_datetime(self.start_time)};
-                                      Δ%: {to_percentual(self.last_price, self.entry_price)}
+                                f"""uptime: {self.uptime};
+                                      Δ%*leverage: {to_percentual(self.last_price, self.entry_price)*self.leverage};
+                                      leverage: {self.leverage};
                                       status: Alive? Positioned? {self.status()}
                                       """
                             )
@@ -225,22 +233,24 @@ class ATrader:
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
-                profit = exit_price - self.entry_price
+                profit = (exit_price - self.entry_price) * self.leverage
                 percentual_profit = (
-                    (exit_price - self.entry_price) / self.entry_price
-                ) * 100
+                    ((exit_price - self.entry_price) / self.entry_price)
+                    * 100
+                    * self.leverage
+                )
 
                 resolution_time = exit_time - self.entry_time
 
                 self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
                 self.logger.info(
-                    f"""STOP-LOSS: E:{self.entry_price} - X:{exit_price}.
-                                absΔ: {profit};
-                                %Δ: {percentual_profit}%;
+                    f"""STOP-LOSS: (E:{self.entry_price} - X:{exit_price}) x L:{self.leverage}.
+                                Δabs: {profit};
+                                Δ%: {percentual_profit}%;
                                 Δt: {res_time}.
                                 cumulative profit: {self.cum_profit}.
-                                uptime: """
+                                uptime: {self.uptime}"""
                 )
 
                 self.is_positioned = False
@@ -260,12 +270,12 @@ class ATrader:
                 self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
                 self.logger.info(
-                    f"""PROFIT: E:{self.entry_price} - X:{exit_price}.
-                                absΔ: {profit};
-                                %Δ: {percentual_profit}%;
+                    f"""PROFIT: (E:{self.entry_price} - X:{exit_price}) x L:{self.leverage}.
+                                Δabs: {profit};
+                                Δ%: {percentual_profit}%;
                                 Δt: {res_time}.
                                 cumulative profit: {self.cum_profit}.
-                                uptime: """
+                                uptime: {self.uptime}"""
                 )
 
                 self.is_positioned = False

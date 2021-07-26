@@ -34,7 +34,7 @@ class Strategy:
         # )
 
         if (
-            (data_window.close.values[-1] / entry_price - 1) * 100
+            ((data_window.close.values[-1] / entry_price - 1) * 100) * trader.leverage
             >= self.take_profit  # pelo menos `take_profit` de lucro
         ) and (np.alltrue(data_window.histogram.tail(self.exit_window) > 0)):
             return True
@@ -44,8 +44,8 @@ class Strategy:
     def stoploss_check(self, trader, data_window, entry_price):
 
         value_check = (
-            data_window.close.values[-1] / entry_price - 1
-        ) * 100 <= self.stoploss_parameter
+            (data_window.close.values[-1] / entry_price - 1) * 100
+        ) * trader.leverage <= self.stoploss_parameter
 
         # trader.logger.info(f"value check: {value_check}")
 
