@@ -11,7 +11,6 @@ class ATrader:
         self.strategy = strategy
         self.symbol = symbol
         self.name = name_trader(strategy, self.symbol)
-        self.data = []
         self.profits = []
         self.cum_profit = 0
 
@@ -27,12 +26,17 @@ class ATrader:
 
         self.grabber = DataGrabber(self.client)
         self.data_window = self._get_initial_data_window()
+        self.data = self.data_window.tail(strategy.macd_params["signal"])
 
+        self.start_time = time.time()  # wont change, used to compute uptime
         self.init_time = time.time()
+        self.now = time.time()
 
         self.is_positioned = False
         self.entry_price = None
         self.entry_time = None
+        self.last_price = None
+        self.now_time = None
 
         self.logger = setup_logger(
             f"{self.name}-logger", f"logs/{self.name}-{self.init_time}.log"
@@ -48,8 +52,17 @@ class ATrader:
         return self.worker.is_alive()
 
     def status(self):
-        status = (self.is_alive(), self.is_positioned)
-        print(f"Is alive? {status[0]}; Is positioned? {status[1]}")
+        status = (
+            self.is_alive(),
+            self.is_positioned,
+        )
+        print(
+            f"""uptime: {pd.to_datetime(self.now - self.start_time)};
+              Δ%: {to_percentual(self.last_price, self.entry_price)}
+              status: Alive? Positioned? {status}
+              """
+        )
+        # print(f"Is alive? {status[0]}; Is positioned? {status[1]}")
         return status
 
     def _get_initial_data_window(self):
@@ -114,8 +127,8 @@ class ATrader:
 
                         kline = oldest_stream_data_from_stream_buffer["kline"]
 
-                        now = time.time()
-                        kline_time = pd.to_datetime(now, unit="s", utc=False)
+                        self.now = time.time()
+                        kline_time = pd.to_datetime(self.now, unit="s", utc=False)
 
                         o = float(kline["open_price"])
                         h = float(kline["high_price"])
@@ -127,6 +140,9 @@ class ATrader:
                         is_closed = bool(kline["is_closed"])
 
                         last_index = self.data_window.index[-1]
+
+                        self.last_price = c
+                        self.now_time = kline_time
 
                         dohlcv = pd.DataFrame(
                             np.atleast_2d(np.array([kline_time, o, h, l, c, v])),
@@ -161,7 +177,7 @@ class ATrader:
                             axis=1,
                         )
 
-                        if int(now - self.init_time) >= tf_as_seconds / 1:
+                        if int(self.now - self.init_time) >= tf_as_seconds / 1:
 
                             self.data_window.drop(index=[0], axis=0, inplace=True)
                             self.data_window = self.data_window.append(
@@ -172,8 +188,19 @@ class ATrader:
 
                         else:
                             self.data_window.update(new_row)
+                            self.data = self.data_window.tail(
+                                strategy.macd_params["signal"]
+                            )
 
                         self._act_on_signal()
+
+                        if int(self.now - self.start_time) % 60 == 0:
+                            self.logger.info(
+                                f"""uptime: {pd.to_datetime(self.now - self.start_time)};
+                                      Δ%: {to_percentual(self.last_price, self.entry_price)}
+                                      status: Alive? Positioned? {self.status()}
+                                      """
+                            )
 
                 except:
                     pass
@@ -185,9 +212,9 @@ class ATrader:
         2) essa é a função que faz os trades, efetivamente. falta isso
         """
         if self.is_positioned:
+
             if self.strategy.stoploss_check(self.data_window, self.entry_price):
 
-                self.is_positioned = False
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
@@ -209,9 +236,10 @@ class ATrader:
                                 uptime: """
                 )
 
+                self.is_positioned = False
+
             elif self.strategy.exit_signal(self.data_window, self.entry_price):
 
-                self.is_positioned = False
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
@@ -232,6 +260,8 @@ class ATrader:
                                 cumulative profit: {self.cum_profit}.
                                 uptime: """
                 )
+
+                self.is_positioned = False
         else:
             if self.strategy.entry_signal(self.data_window):
                 self.is_positioned = True

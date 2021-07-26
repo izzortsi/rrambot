@@ -18,8 +18,12 @@ from unicorn_binance_websocket_api.unicorn_binance_websocket_api_manager import 
     BinanceWebSocketApiManager,
 )
 
+# CONSTANTS
+
 API_KEY = os.environ.get("API_KEY")
 API_SECRET = os.environ.get("API_SECRET")
+
+# AUXILIARY FUNCTIONS
 
 
 def futures_mark_price_klines(self, **params):
@@ -35,6 +39,12 @@ Client.futures_mark_price_klines = futures_mark_price_klines
 def name_trader(strategy, symbol):
     return "_".join([strategy.name, symbol, strategy.timeframe])
 
+
+def to_percentual(exit_price, entry_price):
+    return ((exit_price - entry_price) / entry_price) * 100
+
+
+# LOGGER CONFIG
 
 if not os.path.exists("logs/"):
     os.mkdir("logs/")

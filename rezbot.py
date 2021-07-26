@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     # strategy1 = Strategy("macd", "ethusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
     # strategy2 = Strategy("macd", "bnbusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
-
+    strategy_params = ["macd", "1m", -0.2, 1.5, 2, 1]
     strategy = Strategy("macd", "1m", -0.2, 1.5, 2, 1)
     # strategy2 = Strategy("macd", "1m", -0.2, 1.5, 2, 1)
     # strategy3 = Strategy("macd", "1m", -0.2, 1.5, 2, 1)

@@ -30,7 +30,7 @@ class Strategy:
     def exit_signal(self, data_window, entry_price):
 
         if (
-            (self.data_window.closes.values[-1] / entry_price - 1) * 100
+            (data_window.closes.values[-1] / entry_price - 1) * 100
             >= self.take_profit  # pelo menos `take_profit` de lucro
         ) and (np.alltrue(data_window.histogram.tail(self.exit_window) > 0)):
             return True
@@ -39,6 +39,10 @@ class Strategy:
 
     def stoploss_check(self, data_window, entry_price):
 
-        return (
+        value_check = (
             data_window.closes.values[-1] / entry_price - 1
         ) * 100 <= self.stoploss_parameter
+
+        print(f"value check {value_check}")
+
+        return value_check
