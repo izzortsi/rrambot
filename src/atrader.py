@@ -27,6 +27,7 @@ class ATrader:
 
         self.grabber = DataGrabber(self.client)
         self.data_window = self._get_initial_data_window()
+        self.running_candles = []  # self.data_window.copy(deep=True)
         self.data = None
 
         self.start_time = time.time()  # wont change, used to compute uptime
@@ -89,7 +90,6 @@ class ATrader:
             symbol=self.symbol, tframe=self.strategy.timeframe, limit=1
         )
         klines = klines.append(last_kline_row, ignore_index=True)
-
         date = klines.date
 
         df = self.grabber.compute_indicators(
@@ -170,6 +170,9 @@ class ATrader:
                             ],
                             index=[last_index],
                         )
+                        # if int(self.now - self.start_time) % 2 == 0:
+                        #    self.running_candles.append(dohlcv)
+                        self.running_candles.append(dohlcv)
                         ohlcv = dohlcv.drop(columns="date")
                         # print(dohlcv)
 
@@ -209,6 +212,8 @@ class ATrader:
                             self.data = self.data_window.tail(
                                 self.strategy.macd_params["signal"]
                             )
+
+                            # self.running_candles.append(dohlcv)
 
                         self.uptime = to_datetime_tz(self.now) - to_datetime_tz(
                             self.start_time
