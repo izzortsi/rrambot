@@ -39,3 +39,35 @@
                 tp: 5.0;
                 check? 1st condition: True; 2nd condition: False
                 is positioned? True
+2021-07-27 01:24:30,366 sl check: 0.9941016634651412;
+                sl: -0.4
+                check? False
+                is positioned? True
+2021-07-27 01:24:30,367 exit check, 0.9941016634651412;
+                tp: 5.0;
+                check? 1st condition: False; 2nd condition: False
+                is positioned? True
+2021-07-27 01:25:00,253 sl check: 7.290078865398453;
+                sl: -0.4
+                check? False
+                is positioned? True
+2021-07-27 01:25:00,254 exit check, 7.290078865398453;
+                tp: 5.0;
+                check? 1st condition: True; 2nd condition: False
+                is positioned? True
+2021-07-27 01:25:30,067 sl check: 8.284180528861373;
+                sl: -0.4
+                check? False
+                is positioned? True
+2021-07-27 01:25:30,067 exit check, 8.284180528861373;
+                tp: 5.0;
+                check? 1st condition: True; 2nd condition: False
+                is positioned? True
+2021-07-27 01:26:00,060 sl check: 5.964609980781965;
+                sl: -0.4
+                check? False
+                is positioned? True
+2021-07-27 01:26:00,072 exit check, 5.964609980781965;
+                tp: 5.0;
+                check? 1st condition: True; 2nd condition: False
+                is positioned? True

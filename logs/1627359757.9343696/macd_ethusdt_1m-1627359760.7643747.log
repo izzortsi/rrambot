@@ -29,3 +29,37 @@
                                     Δ%: -0.5960185957786037%;
                                     cumulative profit: -4.767109838025261%
 2021-07-27 01:24:07,335 ENTRY: E:2181.0 at t:2021-07-27T04:24:07.311829504
+2021-07-27 01:24:13,369 STOPLOSS:
+                                    Δabs: -21.000000000003638;
+                                    Δ%: -0.9628610729025051%;
+                                    cumulative profit: -5.729970910927767%
+2021-07-27 01:24:14,399 ENTRY: E:2180.76 at t:2021-07-27T04:24:14.370530560
+2021-07-27 01:24:30,713 sl check: 5.823657807368932;
+                sl: -0.4
+                check? False
+                is positioned? True
+2021-07-27 01:24:30,714 exit check, 5.823657807368932;
+                tp: 5.0;
+                check? 1st condition: True; 2nd condition: False
+                is positioned? True
+2021-07-27 01:24:57,416 STOPLOSS:
+                                    Δabs: -11.000000000012733;
+                                    Δ%: -0.5044113061507334%;
+                                    cumulative profit: -6.2343822170785%
+2021-07-27 01:24:58,449 ENTRY: E:2180.66 at t:2021-07-27T04:24:58.417143808
+2021-07-27 01:25:30,202 sl check: 3.4393257087295126;
+                sl: -0.4
+                check? False
+                is positioned? True
+2021-07-27 01:25:30,202 exit check, 3.4393257087295126;
+                tp: 5.0;
+                check? 1st condition: False; 2nd condition: False
+                is positioned? True
+2021-07-27 01:26:00,071 sl check: 4.173048526594503;
+                sl: -0.4
+                check? False
+                is positioned? True
+2021-07-27 01:26:00,073 exit check, 4.173048526594503;
+                tp: 5.0;
+                check? 1st condition: False; 2nd condition: False
+                is positioned? True
