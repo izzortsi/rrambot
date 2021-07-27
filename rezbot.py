@@ -23,7 +23,8 @@ leverage = args.leverage
 # from src.grabber import *
 # from src.strategy import *
 if __name__ == "__main__":
-    manager = Manager(API_KEY, API_SECRET, rate=rate)
+
+    m = Manager(API_KEY, API_SECRET, rate=rate)
 
     # params = {"fast": 7, "slow": 14, "signal": 5}
 
@@ -31,18 +32,18 @@ if __name__ == "__main__":
     # strategy2 = Strategy("macd", "bnbusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
     # strategy_params = ["macd", "1m", -0.2, 1.5, 2, 1]
     strategy_params = ["macd", "1m", sl, tp, 2, 1]
-    strategy = Strategy(*strategy_params)
+    strat = Strategy(*strategy_params)
     # strategy2 = Strategy("macd", "1m", -0.2, 1.5, 2, 1)
     # strategy3 = Strategy("macd", "1m", -0.2, 1.5, 2, 1)
 
     # %%
 
-    symbols = ["ethusdt", "bnbusdt", "btcusdt"]
+    syms = ["ethusdt", "bnbusdt", "btcusdt"]
 
     # %%
 
-    t1 = manager.start_trader(strategy, symbols[0], leverage=leverage)
-    # t2 = manager.start_trader(strategy, symbols[1], leverage=leverage)
-    # t3 = manager.start_trader(strategy, symbols[2], leverage=leverage)
+    t1 = m.start_trader(strat, syms[0], leverage=leverage)
+    t2 = m.start_trader(strat, syms[1], leverage=leverage)
+    t3 = m.start_trader(strat, syms[2], leverage=leverage)
 
 # %%

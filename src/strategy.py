@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 
 class Strategy:
@@ -20,7 +21,7 @@ class Strategy:
         self.exit_window = exit_window
         self.macd_params = macd_params
 
-    def entry_signal(self, data_window):
+    def entry_signal(self, trader, data_window):
 
         if np.alltrue(data_window.histogram.tail(self.entry_window) < 0):
             return True
@@ -33,18 +34,22 @@ class Strategy:
             (data_window.close.values[-1] / entry_price - 1) * 100
         ) * trader.leverage
 
-        trader.logger.info(
-            f"""exit check, {leveraged_diff};
-        tp: {self.take_profit};
-        check? {leveraged_diff >= self.take_profit}"""
-        )
+        condition1 = leveraged_diff >= self.take_profit
+        condition2 = np.alltrue(data_window.histogram.tail(self.exit_window) > 0)
+        check = condition1 and condition2
 
-        if (leveraged_diff >= self.take_profit) and (
-            np.alltrue(data_window.histogram.tail(self.exit_window) > 0)
-        ):
-            return True
-        else:
-            return False
+        if check:
+            trader.is_positioned = False
+        if int(time.time()) % 30 == 0:
+            # print(check)
+            trader.logger.info(
+                f"""exit check, {leveraged_diff};
+                tp: {self.take_profit};
+                check? 1st condition: {condition1}; 2nd condition: {condition2}
+                is positioned? {trader.is_positioned}"""
+            )
+
+        return check
 
     def stoploss_check(self, trader, data_window, entry_price):
 
@@ -52,10 +57,18 @@ class Strategy:
             (data_window.close.values[-1] / entry_price - 1) * 100
         ) * trader.leverage
 
-        trader.logger.info(
-            f"""sl check: {leveraged_diff};
-        sl: {self.stoploss_parameter}
-        check? {leveraged_diff <= self.stoploss_parameter}"""
-        )
+        check = leveraged_diff <= self.stoploss_parameter
 
-        return leveraged_diff <= self.stoploss_parameter
+        if check:
+            trader.is_positioned = False
+
+        if int(time.time()) % 30 == 0:
+            # print(check)
+            trader.logger.info(
+                f"""sl check: {leveraged_diff};
+                sl: {self.stoploss_parameter}
+                check? {check}
+                is positioned? {trader.is_positioned}"""
+            )
+
+        return check

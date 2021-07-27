@@ -41,7 +41,8 @@ class ATrader:
         self.uptime = None
 
         self.logger = setup_logger(
-            f"{self.name}-logger", f"logs/{self.name}-{self.init_time}.log"
+            f"{self.name}-logger",
+            f"{logs_for_this_run}/{self.name}-{self.init_time}.log",
         )
 
     def stop(self):
@@ -209,14 +210,14 @@ class ATrader:
 
                         self._act_on_signal()
 
-                        if int(self.now - self.start_time) % 60 == 0:
-                            self.logger.info(
-                                f"""uptime: {self.uptime};
-                                      Δ%*leverage: {to_percentual(self.last_price, self.entry_price)*self.leverage};
-                                      leverage: {self.leverage};
-                                      status: Alive? Positioned? {self.status()}
-                                      """
-                            )
+                        # if int(self.now - self.start_time) % 60 == 0:
+                        #     self.logger.info(
+                        #         f"""uptime: {self.uptime};
+                        #               Δ%*leverage: {to_percentual(self.last_price, self.entry_price)*self.leverage};
+                        #               leverage: {self.leverage};
+                        #               status: Alive? Positioned? {self.status()}
+                        #               """
+                        #     )
 
                 except:
                     pass
@@ -233,7 +234,7 @@ class ATrader:
             #     self.strategy.stoploss_check(self, self.data_window, self.entry_price)
             # )
             if self.strategy.stoploss_check(self, self.data_window, self.entry_price):
-                print("sl")
+                # print("sl")
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
@@ -248,47 +249,63 @@ class ATrader:
 
                 self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
+                # esse log nao tá indo
+                # self.logger.info(
+                #     f"""STOP-LOSS: (E:{self.entry_price} - X:{exit_price}) x L:{self.leverage}.
+                #                 Δabs: {profit};
+                #                 Δ%: {percentual_profit}%;
+                #                 Δt: {res_time}.
+                #                 cumulative profit: {self.cum_profit}.
+                #                 uptime: {self.uptime}"""
+                # )
                 self.logger.info(
-                    f"""STOP-LOSS: (E:{self.entry_price} - X:{exit_price}) x L:{self.leverage}.
-                                Δabs: {profit};
-                                Δ%: {percentual_profit}%;
-                                Δt: {res_time}.
-                                cumulative profit: {self.cum_profit}.
-                                uptime: {self.uptime}"""
+                    f"""STOPLOSS:
+                                    Δabs: {profit};
+                                    Δ%: {percentual_profit}%;
+                                    cumulative profit: {self.cum_profit}%"""
                 )
 
-                self._change_position()
+                # self._change_position()
 
             elif self.strategy.exit_signal(self, self.data_window, self.entry_price):
-                print("tp")
+                # print("tp")
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
                 profit = exit_price - self.entry_price
                 percentual_profit = (
-                    (exit_price - self.entry_price) / self.entry_price
-                ) * 100
+                    ((exit_price - self.entry_price) / self.entry_price)
+                    * 100
+                    * self.leverage
+                )
 
                 resolution_time = exit_time - self.entry_time
 
                 self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
+                # esse log nao tá indo
+                # self.logger.info(
+                #     f"""PROFIT: (E:{self.entry_price} - X:{exit_price}) x L:{self.leverage}.
+                #                 Δabs: {profit};
+                #                 Δ%: {percentual_profit}%;
+                #                 Δt: {res_time}.
+                #                 cumulative profit: {self.cum_profit}.
+                #                 uptime: {self.uptime}"""
+                # )
                 self.logger.info(
-                    f"""PROFIT: (E:{self.entry_price} - X:{exit_price}) x L:{self.leverage}.
-                                Δabs: {profit};
-                                Δ%: {percentual_profit}%;
-                                Δt: {res_time}.
-                                cumulative profit: {self.cum_profit}.
-                                uptime: {self.uptime}"""
+                    f"""PROFIT:
+                                    Δabs: {profit};
+                                    Δ%: {percentual_profit}%
+                                    cumulative profit: {self.cum_profit}%"""
                 )
-
-                self._change_position()
+                # self._change_position()
 
         else:
-            if self.strategy.entry_signal(self.data_window):
+            if self.strategy.entry_signal(self, self.data_window):
                 self.entry_price = self.data_window.close.values[-1]
                 self.entry_time = self.data_window.date.values[-1]
                 self.logger.info(f"ENTRY: E:{self.entry_price} at t:{self.entry_time}")
+
                 self._change_position()
 
     def live_plot(self):

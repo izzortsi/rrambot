@@ -49,6 +49,11 @@ def to_percentual(exit_price, entry_price):
 if not os.path.exists("logs/"):
     os.mkdir("logs/")
 
+logs_for_this_run = f"logs/{time.time()}/"
+
+if not os.path.exists(logs_for_this_run):
+    os.mkdir(logs_for_this_run)
+
 # %%
 
 formatter = logging.Formatter("%(asctime)s %(message)s")
