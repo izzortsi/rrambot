@@ -55,9 +55,11 @@ class Manager:
             pass
         pass
 
-    def stop(self):
+    def stop(self, q=None):
         self.close_traders()
         self.bwsm.stop_manager_with_all_streams()
+        if q == 1:
+            os.sys.exit(0)
 
     def traders_status(self):
         status_list = [trader.status() for _, trader in self.get_traders()]

@@ -38,9 +38,9 @@ class Strategy:
         condition2 = np.alltrue(data_window.histogram.tail(self.exit_window) > 0)
         check = condition1 and condition2
 
-        if check:
-            trader.is_positioned = False
-
+        # if check:
+        #   trader.is_positioned = False
+        #   trader._change_position()
         # if int(time.time()) % 30 == 0:
         #     # print(check)
         #     trader.logger.info(
@@ -60,9 +60,9 @@ class Strategy:
 
         check = leveraged_diff <= self.stoploss_parameter
 
-        if check:
-            trader.is_positioned = False
-
+        # if check:
+        #   trader.is_positioned = False
+        #   trader._change_position()
         # if int(time.time()) % 30 == 0:
         #     # print(check)
         #     trader.logger.info(

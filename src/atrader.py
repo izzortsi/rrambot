@@ -1,8 +1,6 @@
 from src import *
 from src.grabber import DataGrabber
 
-# %%
-
 
 class ATrader:
     def __init__(self, manager, strategy, symbol, leverage):
@@ -42,13 +40,14 @@ class ATrader:
         self.now_time = None
         self.uptime = None
 
-        self.name_for_logs = f"{self.name}-{strf_epoch(self.init_time, fmt="%H-%M-%S")}"
+        strf_init_time = strf_epoch(self.init_time, fmt="%H-%M-%S")
+        self.name_for_logs = f"{self.name}-{strf_init_time}"
 
         self.logger = setup_logger(
             f"{self.name}-logger",
             f"{logs_for_this_run}/{self.name_for_logs}.log",
         )
-
+        self.csv_log_path = f"{logs_for_this_run}/{self.name_for_logs}.csv"
         # self.confirmatory_data = {"sl": [], "tp": []}
         self.confirmatory_data = []
 
@@ -68,7 +67,7 @@ class ATrader:
         )
         print(
             f"""uptime: {to_datetime_tz(self.now) - to_datetime_tz(self.start_time)};
-              Δ%*leverage: {to_percentual(self.last_price, self.entry_price, leverage= self.leverage}
+              Δ%*leverage: {to_percentual(self.last_price, self.entry_price, leverage = self.leverage)}
               leverage: {self.leverage};
               status: Alive? Positioned? {status}
               """
@@ -78,7 +77,7 @@ class ATrader:
 
     def _change_position(self):
         self.is_positioned = not self.is_positioned
-        time.sleep(5)
+        # time.sleep(0.1)
 
     def _get_initial_data_window(self):
         klines = self.grabber.get_data(
@@ -216,11 +215,18 @@ class ATrader:
                         )
 
                         self._act_on_signal()
+                        # print(int(self.now - self.start_time) % 5)
 
-                        if int(self.now - time.time()) % 180 == 0:
+                        if (int(self.now - self.start_time) % 180 == 0) and (
+                            len(self.confirmatory_data) >= 0
+                        ):
+                            # print(int(self.now - self.start_time))
                             pd.DataFrame.from_dict(self.confirmatory_data).to_csv(
-                                f"logs/{self.name}_{self.name_for_logs}.csv", mode="a"
+                                f"{self.csv_log_path}",
+                                mode="w",
                             )
+                        # mode="w",
+                        # header=not os.path.exists(csv_log_path),
 
                 except:
                     pass
@@ -265,14 +271,31 @@ class ATrader:
                     }
                 )
 
+                # data_to_csv = {
+                #     "type": "sl",
+                #     "entry_time": self.entry_time,
+                #     "entry_price": self.entry_price,
+                #     "exit_time": exit_time,
+                #     "exit_price": exit_price,
+                #     "percentual_difference": percentual_profit,
+                #     "cumulative_profit": self.cum_profit,
+                # }
+                #
+                # pd.DataFrame.from_dict(data_to_csv).to_csv(
+                #     f"{self.csv_log_path}",
+                #     mode="a",
+                #     header=not os.path.exists(self.csv_log_path),
+                # )
+
                 self.logger.info(
                     f"STOPLOSS: Δabs: {profit}; Δ%: {percentual_profit}%; cumulative profit: {self.cum_profit}%"
                 )
 
-                # self._change_position()
+                self._change_position()
+                self.entry_price = None
 
             elif self.strategy.exit_signal(self, self.data_window, self.entry_price):
-                #print("tp")
+                # print("tp")
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
@@ -300,10 +323,28 @@ class ATrader:
                     }
                 )
 
+                # data_to_csv = {
+                #     "type": "sl",
+                #     "entry_time": self.entry_time,
+                #     "entry_price": self.entry_price,
+                #     "exit_time": exit_time,
+                #     "exit_price": exit_price,
+                #     "percentual_difference": percentual_profit,
+                #     "cumulative_profit": self.cum_profit,
+                # }
+                #
+                # pd.DataFrame.from_dict(data_to_csv).to_csv(
+                #     f"{self.csv_log_path}",
+                #     mode="a",
+                #     header=not os.path.exists(self.csv_log_path),
+                # )
+
                 self.logger.info(
                     f"PROFIT: Δabs: {profit}; Δ%: {percentual_profit}%; cumulative profit: {self.cum_profit}%"
                 )
-                # self._change_position()
+
+                self._change_position()
+                self.entry_price = None
 
         else:
             if self.strategy.entry_signal(self, self.data_window):

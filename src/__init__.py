@@ -74,7 +74,7 @@ def to_datetime_tz(arg, timedelta=-pd.Timedelta("03:00:00"), unit="s", **kwargs)
     return ts + timedelta
 
 
-def strf_epoch(epochtime, fmt="%j.%y_%H-%M-%S"):
+def strf_epoch(epochtime, fmt="%j-%y_%H-%M-%S"):
     """
 
 
@@ -85,7 +85,7 @@ def strf_epoch(epochtime, fmt="%j.%y_%H-%M-%S"):
 
     """
     epochtime to string using datetime
-    signature: def strf_epoch(epochtime, fmt="%j.%y_%H-%M-%S")
+    signature: def strf_epoch(epochtime, fmt="%j-%y_%H-%M-%S")
 
     Args:
         epochtime (float): epochtime as float in seconds
@@ -98,7 +98,7 @@ def strf_epoch(epochtime, fmt="%j.%y_%H-%M-%S"):
 
 
 # LOGGER CONFIG
-LOG_DATEFORMAT = "%j.%y_%H-%M-%S"
+LOG_DATEFORMAT = "%j-%y_%H-%M-%S"
 
 if not os.path.exists("logs/"):
     os.mkdir("logs/")
