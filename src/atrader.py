@@ -260,9 +260,9 @@ class ATrader:
                 # )
                 self.logger.info(
                     f"""STOPLOSS:
-                                    Δabs: {profit};
-                                    Δ%: {percentual_profit}%;
-                                    cumulative profit: {self.cum_profit}%"""
+                            Δabs: {profit};
+                            Δ%: {percentual_profit}%;
+                            cumulative profit: {self.cum_profit}%"""
                 )
 
                 # self._change_position()
@@ -294,9 +294,9 @@ class ATrader:
                 # )
                 self.logger.info(
                     f"""PROFIT:
-                                    Δabs: {profit};
-                                    Δ%: {percentual_profit}%
-                                    cumulative profit: {self.cum_profit}%"""
+                            Δabs: {profit};
+                            Δ%: {percentual_profit}%
+                            cumulative profit: {self.cum_profit}%"""
                 )
                 # self._change_position()
 
