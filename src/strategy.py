@@ -40,14 +40,15 @@ class Strategy:
 
         if check:
             trader.is_positioned = False
-        if int(time.time()) % 30 == 0:
-            # print(check)
-            trader.logger.info(
-                f"""exit check, {leveraged_diff};
-                tp: {self.take_profit};
-                check? 1st condition: {condition1}; 2nd condition: {condition2}
-                is positioned? {trader.is_positioned}"""
-            )
+
+        # if int(time.time()) % 30 == 0:
+        #     # print(check)
+        #     trader.logger.info(
+        #         f"""exit check, {leveraged_diff};
+        #         tp: {self.take_profit};
+        #         check? 1st condition: {condition1}; 2nd condition: {condition2}
+        #         is positioned? {trader.is_positioned}"""
+        #     )
 
         return check
 
@@ -62,13 +63,13 @@ class Strategy:
         if check:
             trader.is_positioned = False
 
-        if int(time.time()) % 30 == 0:
-            # print(check)
-            trader.logger.info(
-                f"""sl check: {leveraged_diff};
-                sl: {self.stoploss_parameter}
-                check? {check}
-                is positioned? {trader.is_positioned}"""
-            )
+        # if int(time.time()) % 30 == 0:
+        #     # print(check)
+        #     trader.logger.info(
+        #         f"""sl check: {leveraged_diff};
+        #         sl: {self.stoploss_parameter}
+        #         check? {check}
+        #         is positioned? {trader.is_positioned}"""
+        #     )
 
         return check

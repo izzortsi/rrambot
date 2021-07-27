@@ -1,6 +1,8 @@
 from src import *
 from src.grabber import DataGrabber
 
+# %%
+
 
 class ATrader:
     def __init__(self, manager, strategy, symbol, leverage):
@@ -40,10 +42,15 @@ class ATrader:
         self.now_time = None
         self.uptime = None
 
+        self.name_for_logs = f"{self.name}-{strf_epoch(self.init_time, fmt="%H-%M-%S")}"
+
         self.logger = setup_logger(
             f"{self.name}-logger",
-            f"{logs_for_this_run}/{self.name}-{self.init_time}.log",
+            f"{logs_for_this_run}/{self.name_for_logs}.log",
         )
+
+        # self.confirmatory_data = {"sl": [], "tp": []}
+        self.confirmatory_data = []
 
     def stop(self):
         self.keep_running = False
@@ -60,8 +67,8 @@ class ATrader:
             self.is_positioned,
         )
         print(
-            f"""uptime: {pd.to_datetime(self.now) - pd.to_datetime(self.start_time)};
-              Δ%*leverage: {to_percentual(self.last_price, self.entry_price) * self.leverage}
+            f"""uptime: {to_datetime_tz(self.now) - to_datetime_tz(self.start_time)};
+              Δ%*leverage: {to_percentual(self.last_price, self.entry_price, leverage= self.leverage}
               leverage: {self.leverage};
               status: Alive? Positioned? {status}
               """
@@ -136,7 +143,7 @@ class ATrader:
                         kline = oldest_stream_data_from_stream_buffer["kline"]
 
                         self.now = time.time()
-                        kline_time = pd.to_datetime(self.now, unit="s", utc=False)
+                        kline_time = to_datetime_tz(self.now)
 
                         o = float(kline["open_price"])
                         h = float(kline["high_price"])
@@ -204,20 +211,16 @@ class ATrader:
                                 self.strategy.macd_params["signal"]
                             )
 
-                        self.uptime = pd.to_datetime(self.now) - pd.to_datetime(
+                        self.uptime = to_datetime_tz(self.now) - to_datetime_tz(
                             self.start_time
                         )
 
                         self._act_on_signal()
 
-                        # if int(self.now - self.start_time) % 60 == 0:
-                        #     self.logger.info(
-                        #         f"""uptime: {self.uptime};
-                        #               Δ%*leverage: {to_percentual(self.last_price, self.entry_price)*self.leverage};
-                        #               leverage: {self.leverage};
-                        #               status: Alive? Positioned? {self.status()}
-                        #               """
-                        #     )
+                        if int(self.now - time.time()) % 180 == 0:
+                            pd.DataFrame.from_dict(self.confirmatory_data).to_csv(
+                                f"logs/{self.name}_{self.name_for_logs}.csv", mode="a"
+                            )
 
                 except:
                     pass
@@ -249,30 +252,31 @@ class ATrader:
 
                 self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
-                # esse log nao tá indo
-                # self.logger.info(
-                #     f"""STOP-LOSS: (E:{self.entry_price} - X:{exit_price}) x L:{self.leverage}.
-                #                 Δabs: {profit};
-                #                 Δ%: {percentual_profit}%;
-                #                 Δt: {res_time}.
-                #                 cumulative profit: {self.cum_profit}.
-                #                 uptime: {self.uptime}"""
-                # )
+
+                self.confirmatory_data.append(
+                    {
+                        "type": "sl",
+                        "entry_time": self.entry_time,
+                        "entry_price": self.entry_price,
+                        "exit_time": exit_time,
+                        "exit_price": exit_price,
+                        "percentual_difference": percentual_profit,
+                        "cumulative_profit": self.cum_profit,
+                    }
+                )
+
                 self.logger.info(
-                    f"""STOPLOSS:
-                            Δabs: {profit};
-                            Δ%: {percentual_profit}%;
-                            cumulative profit: {self.cum_profit}%"""
+                    f"STOPLOSS: Δabs: {profit}; Δ%: {percentual_profit}%; cumulative profit: {self.cum_profit}%"
                 )
 
                 # self._change_position()
 
             elif self.strategy.exit_signal(self, self.data_window, self.entry_price):
-                # print("tp")
+                #print("tp")
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
-                profit = exit_price - self.entry_price
+                profit = (exit_price - self.entry_price) * self.leverage
                 percentual_profit = (
                     ((exit_price - self.entry_price) / self.entry_price)
                     * 100
@@ -283,20 +287,21 @@ class ATrader:
 
                 self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
-                # esse log nao tá indo
-                # self.logger.info(
-                #     f"""PROFIT: (E:{self.entry_price} - X:{exit_price}) x L:{self.leverage}.
-                #                 Δabs: {profit};
-                #                 Δ%: {percentual_profit}%;
-                #                 Δt: {res_time}.
-                #                 cumulative profit: {self.cum_profit}.
-                #                 uptime: {self.uptime}"""
-                # )
+
+                self.confirmatory_data.append(
+                    {
+                        "type": "tp",
+                        "entry_time": self.entry_time,
+                        "entry_price": self.entry_price,
+                        "exit_time": exit_time,
+                        "exit_price": exit_price,
+                        "percentual_difference": percentual_profit,
+                        "cumulative_profit": self.cum_profit,
+                    }
+                )
+
                 self.logger.info(
-                    f"""PROFIT:
-                            Δabs: {profit};
-                            Δ%: {percentual_profit}%
-                            cumulative profit: {self.cum_profit}%"""
+                    f"PROFIT: Δabs: {profit}; Δ%: {percentual_profit}%; cumulative profit: {self.cum_profit}%"
                 )
                 # self._change_position()
 

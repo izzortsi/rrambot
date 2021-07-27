@@ -30,7 +30,7 @@ class DataGrabber:
 
         df = pd.DataFrame(data=klines)
         DOHLCV = df.iloc[:, [0, 1, 2, 3, 4, 5]]
-        dates = pd.to_datetime(DOHLCV[0], unit="ms", utc=False)
+        dates = to_datetime_tz(DOHLCV[0], unit="ms")
         OHLCV = DOHLCV.iloc[:, [1, 2, 3, 4, 5]].astype("float64")
 
         DOHLCV = pd.concat([dates, OHLCV], axis=1)
