@@ -170,17 +170,18 @@ class ATrader:
                             ],
                             index=[last_index],
                         )
-                        # if int(self.now - self.start_time) % 2 == 0:
-                        #    self.running_candles.append(dohlcv)
-                        self.running_candles.append(dohlcv)
-                        ohlcv = dohlcv.drop(columns="date")
+
+                        if int(self.now - self.start_time) % 4 == 0:
+                            self.running_candles.append(dohlcv)
+                        # self.running_candles.append(dohlcv)
+                        # ohlcv = dohlcv.drop(columns="date")
                         # print(dohlcv)
 
                         tf_as_seconds = (
                             interval_to_milliseconds(self.strategy.timeframe) * 0.001
                         )
 
-                        new_close = ohlcv.close
+                        new_close = dohlcv.close
                         self.data_window.close.update(new_close)
 
                         macd = self.grabber.compute_indicators(
@@ -222,7 +223,7 @@ class ATrader:
                         self._act_on_signal()
                         # print(int(self.now - self.start_time) % 5)
 
-                        if (int(self.now - self.start_time) % 180 == 0) and (
+                        if (int(self.now - self.start_time) % 300 == 0) and (
                             len(self.confirmatory_data) >= 0
                         ):
                             # print(int(self.now - self.start_time))
@@ -259,9 +260,9 @@ class ATrader:
                     * self.leverage
                 )
 
-                resolution_time = exit_time - self.entry_time
+                # resolution_time = exit_time - self.entry_time
 
-                self.profits.append([profit, percentual_profit, resolution_time])
+                # self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
 
                 self.confirmatory_data.append(
@@ -311,9 +312,9 @@ class ATrader:
                     * self.leverage
                 )
 
-                resolution_time = exit_time - self.entry_time
+                # resolution_time = exit_time - self.entry_time
 
-                self.profits.append([profit, percentual_profit, resolution_time])
+                # self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
 
                 self.confirmatory_data.append(
