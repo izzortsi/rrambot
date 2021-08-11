@@ -1,10 +1,6 @@
 ##
 import pandas as pd
 import pandas_ta as ta
-
-# from binance.client import Client
-# from binance.enums import *
-# from grabber import *
 ##
 from bokeh.io import output_file, show, save
 from bokeh.models import *
@@ -18,14 +14,13 @@ numeric = Union[int, float]
 
 
 # %%
+read_from = f"{pwd()}/logs/208-21_17-52-33/"
 
-
-df_trades = pd.read_csv(
-    f"{pwd()}/logs/208-21_17-52-33/macd_bnbusdt_1m-17-52-36.csv",
+df_trades = pd.read_csv(read_from + "macd_bnbusdt_1m-17-52-36.csv",
     parse_dates=["entry_time", "exit_time"],
 )
 df = pd.read_csv(
-    f"{pwd()}/logs/208-21_17-52-33/macd_bnbusdt_1m-17-52-36_candles.csv",
+    read_from + "macd_bnbusdt_1m-17-52-36_candles.csv",
     parse_dates=["date"],
 )
 
@@ -198,7 +193,7 @@ class FTestLooker:
 
 ##
 looker = FTestLooker(df, df_trades, "bnbusdt", 100)
-output_file(
+output_file(read_from +
     f"{looker.symbol}_1s_from={looker.fromdate}_to={looker.todate}.html".replace(
         " ", "_"
     )
