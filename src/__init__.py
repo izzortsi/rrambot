@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 from datetime import datetime
 
 from unicorn_binance_rest_api.unicorn_binance_rest_api_manager import (
-    BinanceRestApiManager as Client,
+    BinanceRestApiMawnager as Client,
 )
 from unicorn_binance_rest_api.unicorn_binance_rest_api_helpers import (
     interval_to_milliseconds,
@@ -76,10 +76,6 @@ def to_datetime_tz(arg, timedelta=-pd.Timedelta("03:00:00"), unit="s", **kwargs)
 
 def strf_epoch(epochtime, fmt="%j-%y_%H-%M-%S"):
     """
-
-
-
-
     returns: string
     """
 

@@ -6,7 +6,7 @@ import pandas_ta as ta
 # from binance.enums import *
 # from grabber import *
 ##
-from bokeh.io import output_file, show
+from bokeh.io import output_file, show, save
 from bokeh.models import *
 from bokeh.plotting import figure
 from bokeh.layouts import gridplot, column
@@ -19,30 +19,20 @@ numeric = Union[int, float]
 
 # %%
 
+
 df_trades = pd.read_csv(
-    "/home/istrozzi/.clones/rezbot/logs/208-21_17-52-33/macd_bnbusdt_1m-17-52-36.csv",
+    f"{pwd()}/logs/208-21_17-52-33/macd_bnbusdt_1m-17-52-36.csv",
     parse_dates=["entry_time", "exit_time"],
 )
 df = pd.read_csv(
-    "/home/istrozzi/.clones/rezbot/logs/208-21_17-52-33/macd_bnbusdt_1m-17-52-36_candles.csv",
+    f"{pwd()}/logs/208-21_17-52-33/macd_bnbusdt_1m-17-52-36_candles.csv",
     parse_dates=["date"],
 )
 
 # %%
-df_trades
-# %%
-type(df.close.iloc[-1])
 
 
-# %%
-
-
-# %%
-(exit_float - entry_float) / 1000
-# %%
-
-##
-class Looker:
+class FTestLooker:
     def __init__(self, df, trades, symbol, leverage):
         self.df = df
         self.trades = trades
@@ -109,7 +99,10 @@ class Looker:
         select.ygrid.grid_line_color = None
         select.add_tools(range_tool)
         select.toolbar.active_multi = range_tool
-        cprofylims = (min(self.trades.cumulative_profit), max(self.trades.cumulative_profit))
+        cprofylims = (
+            min(self.trades.cumulative_profit),
+            max(self.trades.cumulative_profit),
+        )
         cumprof = figure(
             x_axis_type="datetime",
             title="cumulative profit (%)",
@@ -127,7 +120,10 @@ class Looker:
             self.trades.exit_time, self.trades.cumulative_profit, color="black"
         )
 
-        diffylims = (min(self.trades.percentual_difference), max(self.trades.percentual_difference))
+        diffylims = (
+            min(self.trades.percentual_difference),
+            max(self.trades.percentual_difference),
+        )
         diffs = figure(
             x_axis_type="datetime",
             title="percentual differences",
@@ -201,19 +197,18 @@ class Looker:
 
 
 ##
-looker = Looker(df, df_trades, "bnbusdt", 100)
+looker = FTestLooker(df, df_trades, "bnbusdt", 100)
+output_file(
+    f"{looker.symbol}_1s_from={looker.fromdate}_to={looker.todate}.html".replace(
+        " ", "_"
+    )
+)
 
 # %%
 
-##
 p = looker.look()
 
-##
+# %%
+
 show(p)
-##
-# output_file(f"{looker.symbol}_{looker.tframe}_from={looker.fromdate}_to={looker.todate}.html")
-##
-# output_file(f"{looker.symbol}_{looker.tframe}_from={looker.fromdate}_to={looker.todate}.html")
-save(p)
-# output_file(f"{looker.symbol}_{looker.tframe}_from={looker.fromdate}_to={looker.todate}.html")
 save(p)
