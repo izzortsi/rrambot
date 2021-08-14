@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 from datetime import datetime
 
 from unicorn_binance_rest_api.unicorn_binance_rest_api_manager import (
-    BinanceRestApiMawnager as Client,
+    BinanceRestApiManager as Client,
 )
 from unicorn_binance_rest_api.unicorn_binance_rest_api_helpers import (
     interval_to_milliseconds,
