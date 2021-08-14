@@ -96,10 +96,10 @@ def strf_epoch(epochtime, fmt="%j-%y_%H-%M-%S"):
 # LOGGER CONFIG
 LOG_DATEFORMAT = "%j-%y_%H-%M-%S"
 
-if not os.path.exists("logs/"):
-    os.mkdir("logs/")
+if not os.path.exists("logs"):
+    os.mkdir("logs")
 
-logs_for_this_run = f"logs/{strf_epoch(time.time())}/"
+logs_for_this_run = os.path.join("logs", strf_epoch(time.time()))
 
 if not os.path.exists(logs_for_this_run):
     os.mkdir(logs_for_this_run)

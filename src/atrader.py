@@ -46,9 +46,9 @@ class ATrader:
 
         self.logger = setup_logger(
             f"{self.name}-logger",
-            f"{logs_for_this_run}/{self.name_for_logs}.log",
+            os.path.join(logs_for_this_run, f"{self.name_for_logs}.log"),
         )
-        self.csv_log_path = f"{logs_for_this_run}/{self.name_for_logs}.csv"
+        self.csv_log_path = os.path.join({logs_for_this_run}, f"{self.name_for_logs}.csv")
         # self.confirmatory_data = {"sl": [], "tp": []}
         self.confirmatory_data = []
 

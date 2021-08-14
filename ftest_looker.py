@@ -114,7 +114,7 @@ class FTestLooker:
                 # ("index", "$index"),
                 ("exit time", "@exit_time{%m/%d %H:%M:%S}"),
                 (
-                    "cumulative profit",
+                    "cumulative profit (computed against x100 leveraging)",
                     "@cumulative_profit%",
                 ),  # use @{ } for field names with spaces
             ],
@@ -281,11 +281,11 @@ class FTestLooker:
 
 # %%
 
-logdate = (
-    "208-21_17-52-33"  # formato: "%j-%y_%H-%M-%S"; ver src.utils.strf_epoch(epochtime)
-)
-log_filename_prefix = "macd_bnbusdt_1m-17-52-36"
-symbol = "bnbusdt"
+# logdate = (
+#     "208-21_17-52-33"  # formato: "%j-%y_%H-%M-%S"; ver src.utils.strf_epoch(epochtime)
+# )
+# log_filename_prefix = "macd_bnbusdt_1m-17-52-36"
+# symbol = "bnbusdt"
 
 
 def main():
@@ -336,24 +336,3 @@ if __name__ == "__main__":
 
     main()
 
-    #
-    # read_from = os.path.join(os.getcwd(), "logs", args.logdate)
-    # trades_data_path = os.path.join(read_from, f"{args.filename_prefix}.csv")
-    #
-    # df_trades = pd.read_csv(
-    #     trades_data_path,
-    #     parse_dates=["entry_time", "exit_time"],
-    # )
-    #
-    # candles_data_path = os.path.join(read_from, f"{args.filename_prefix}_candles.csv")
-    # df = pd.read_csv(
-    #     candles_data_path,
-    #     parse_dates=["date"],
-    # )
-    #
-    # looker = FTestLooker(df, df_trades, "bnbusdt")
-    # output_filename = f"{log_filename_prefix}_profitcheck.html"
-    # output_file(os.path.join(read_from, output_filename))
-    # p = looker.look()
-    # show(p)
-    # save(p)
