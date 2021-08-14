@@ -8,7 +8,7 @@ import argparse
 
 # %%
 parser = argparse.ArgumentParser()
-parser.add_argument("-r", "--rate", type=int)
+parser.add_argument("-r", "--rate", default=1, type=int)
 parser.add_argument("-sl", "--stoploss", default=-0.2, type=float)
 parser.add_argument("-tp", "--takeprofit", default=1.5, type=float)
 parser.add_argument("-ew", "--entry_window", default=2, type=int)

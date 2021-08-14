@@ -48,7 +48,7 @@ class ATrader:
             f"{self.name}-logger",
             os.path.join(logs_for_this_run, f"{self.name_for_logs}.log"),
         )
-        self.csv_log_path = os.path.join({logs_for_this_run}, f"{self.name_for_logs}.csv")
+        self.csv_log_path = os.path.join(logs_for_this_run, f"{self.name_for_logs}.csv")
         # self.confirmatory_data = {"sl": [], "tp": []}
         self.confirmatory_data = []
 
