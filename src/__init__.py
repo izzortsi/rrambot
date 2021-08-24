@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import time
@@ -8,6 +9,7 @@ import pandas_ta as ta
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from datetime import datetime
+from urllib.parse import urlencode
 
 from unicorn_binance_rest_api.unicorn_binance_rest_api_manager import (
     BinanceRestApiManager as Client,
@@ -34,7 +36,20 @@ def futures_mark_price_klines(self, **params):
     return self._request_futures_api("get", "markPriceKlines", data=params)
 
 
+def futures_place_batch_order(self, **params):
+    """Send in new orders.
+    https://binance-docs.github.io/apidocs/delivery/en/#place-multiple-orders-trade
+    To avoid modifying the existing signature generation and parameter order logic,
+    the url encoding is done on the special query param, batchOrders, in the early stage.
+    """
+    query_string = urlencode(params)
+    query_string = query_string.replace("%27", "%22")
+    params["batchOrders"] = query_string[12:]
+    return self._request_futures_api("post", "batchOrders", True, data=params)
+
+
 Client.futures_mark_price_klines = futures_mark_price_klines
+Client.futures_place_batch_order = futures_place_batch_order
 
 
 def name_trader(strategy, symbol):
@@ -120,6 +135,14 @@ def setup_logger(name, log_file, level=logging.INFO):
     logger.addHandler(handler)
 
     return logger
+
+
+def rows_to_csv(rows: list, num_rows: int, path: str):
+    for i, row in enumerate(rows[-num_rows:]):
+        if i == 0:
+            row.to_csv(path, header=True, mode="w", index=False)
+        elif i > 0:
+            row.to_csv(path, header=False, mode="a", index=False)
 
 
 # import logging
