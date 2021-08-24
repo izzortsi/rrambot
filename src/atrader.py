@@ -14,6 +14,7 @@ class ATrader:
         self.name = name_trader(strategy, self.symbol)
         self.profits = []
         self.cum_profit = 0
+        self.num_trades = 0
 
         self.stoploss_parameter = strategy.stoploss_parameter
         self.take_profit = strategy.take_profit
@@ -49,7 +50,9 @@ class ATrader:
             os.path.join(logs_for_this_run, f"{self.name_for_logs}.log"),
         )
         self.csv_log_path = os.path.join(logs_for_this_run, f"{self.name_for_logs}.csv")
-        # self.confirmatory_data = {"sl": [], "tp": []}
+        self.csv_log_path_candles = os.path.join(
+            logs_for_this_run, f"{self.name_for_logs}_candles.csv"
+        )
         self.confirmatory_data = []
 
     def stop(self):
@@ -75,6 +78,17 @@ class ATrader:
         )
         # print(f"Is alive? {status[0]}; Is positioned? {status[1]}")
         return status
+
+    def rows_to_csv(self):
+        for i, row in enumerate(self.running_candles):
+            if i == 0:
+                row.to_csv(
+                    self.csv_log_path_candles, header=True, mode="w", index=False
+                )
+            elif i > 0:
+                row.to_csv(
+                    self.csv_log_path_candles, header=False, mode="a", index=False
+                )
 
     def _change_position(self):
         self.is_positioned = not self.is_positioned
@@ -124,22 +138,22 @@ class ATrader:
     def _process_stream_data(self):
 
         while self.keep_running:
-            time.sleep(1)
+            time.sleep(0.1)
             if self.bwsm.is_manager_stopping():
                 exit(0)
 
-            oldest_stream_data_from_stream_buffer = (
-                self.bwsm.pop_stream_data_from_stream_buffer(self.stream_name)
+            data_from_stream_buffer = self.bwsm.pop_stream_data_from_stream_buffer(
+                self.stream_name
             )
 
-            if oldest_stream_data_from_stream_buffer is False:
+            if data_from_stream_buffer is False:
                 time.sleep(0.01)
 
             else:
                 try:
-                    if oldest_stream_data_from_stream_buffer["event_type"] == "kline":
+                    if data_from_stream_buffer["event_type"] == "kline":
 
-                        kline = oldest_stream_data_from_stream_buffer["kline"]
+                        kline = data_from_stream_buffer["kline"]
 
                         self.now = time.time()
                         kline_time = to_datetime_tz(self.now)
@@ -171,12 +185,6 @@ class ATrader:
                             index=[last_index],
                         )
 
-                        if int(self.now - self.start_time) % 4 == 0:
-                            self.running_candles.append(dohlcv)
-                        # self.running_candles.append(dohlcv)
-                        # ohlcv = dohlcv.drop(columns="date")
-                        # print(dohlcv)
-
                         tf_as_seconds = (
                             interval_to_milliseconds(self.strategy.timeframe) * 0.001
                         )
@@ -205,6 +213,8 @@ class ATrader:
                                 new_row, ignore_index=True
                             )
 
+                            self.running_candles.append(dohlcv)
+
                             self.init_time = time.time()
 
                         else:
@@ -223,19 +233,36 @@ class ATrader:
                         self._act_on_signal()
                         # print(int(self.now - self.start_time) % 5)
 
-                        if (int(self.now - self.start_time) % 300 == 0) and (
-                            len(self.confirmatory_data) >= 0
+                        updated_num_trades = len(self.confirmatory_data)
+                        # print(updated_num_trades)
+                        if updated_num_trades == 1:
+                            row = pd.DataFrame.from_dict(self.confirmatory_data)
+                            # print(row)
+                            row.to_csv(
+                                self.csv_log_path,
+                                header=True,
+                                mode="w",
+                                index=False,
+                            )
+                            self.num_trades += 1
+
+                        elif (updated_num_trades > 1) and (
+                            updated_num_trades > self.num_trades
                         ):
                             # print(int(self.now - self.start_time))
-                            pd.DataFrame.from_dict(self.confirmatory_data).to_csv(
-                                f"{self.csv_log_path}",
-                                mode="w",
+                            row = pd.DataFrame.from_dict([self.confirmatory_data[-1]])
+                            # print(row)
+                            row.to_csv(
+                                self.csv_log_path,
+                                header=False,
+                                mode="a",
+                                index=False,
                             )
-                        # mode="w",
-                        # header=not os.path.exists(csv_log_path),
+                            self.num_trades += 1
 
                 except:
                     pass
+                    # self.logger.info(str(data_from_stream_buffer))
 
     def _act_on_signal(self):
         """
@@ -264,7 +291,6 @@ class ATrader:
 
                 # self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
-
                 self.confirmatory_data.append(
                     {
                         "type": "sl",
@@ -276,7 +302,6 @@ class ATrader:
                         "cumulative_profit": self.cum_profit,
                     }
                 )
-
                 # data_to_csv = {
                 #     "type": "sl",
                 #     "entry_time": self.entry_time,
@@ -316,7 +341,6 @@ class ATrader:
 
                 # self.profits.append([profit, percentual_profit, resolution_time])
                 self.cum_profit += percentual_profit
-
                 self.confirmatory_data.append(
                     {
                         "type": "tp",
@@ -328,7 +352,6 @@ class ATrader:
                         "cumulative_profit": self.cum_profit,
                     }
                 )
-
                 # data_to_csv = {
                 #     "type": "sl",
                 #     "entry_time": self.entry_time,
@@ -344,7 +367,6 @@ class ATrader:
                 #     mode="a",
                 #     header=not os.path.exists(self.csv_log_path),
                 # )
-
                 self.logger.info(
                     f"PROFIT: Δabs: {profit}; Δ%: {percentual_profit}%; cumulative profit: {self.cum_profit}%"
                 )
