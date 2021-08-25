@@ -27,9 +27,9 @@ f_sl_price = lambda price, sl, lev: f"{(price * (1-(sl/lev)/100)):.2f}"
 
 lev = 100
 
-sl = 1
+sl = 0.2
 # sl / 100
-tp = 5
+tp = 4
 # tp / 100
 # tp_price = f_tp_price(price, tp, lev)
 # sl_price = f_sl_price(price, sl, lev)
@@ -47,8 +47,8 @@ try:
         symbol="ETHUSDT",
         side="BUY",
         type="MARKET",
-        quantity=0.002,
-        priceProtect=True,
+        quantity="0.002",
+        priceProtect=False,
     )
 except BinanceAPIException as error:
     print(type(error))
@@ -71,7 +71,7 @@ else:
             workingType="MARK_PRICE",
             quantity=qty,
             reduceOnly=True,
-            priceProtect=True,
+            priceProtect=False,
             timeInForce="GTE_GTC",
         )
     except BinanceAPIException as error:
@@ -84,7 +84,7 @@ else:
                     side="SELL",
                     type="MARKET",
                     quantity=0.002,
-                    priceProtect=True,
+                    priceProtect=False,
                 )
             except BinanceAPIError as error:
                 print(type(error))
@@ -106,6 +106,10 @@ else:
 
             print(type(error))
             print("tp order, ", error)
+
+
+# %%
+
 # %%
 tp_order2 = brm.futures_create_order(
     symbol="ETHUSDT",
@@ -133,6 +137,7 @@ new_position
 
 stop_order["orderId"]
 brm.futures_get_order(symbol="ethusdt", orderId=stop_order["orderId"])
+brm.futures_get_order(symbol="ethusdt", orderId=tp_order["orderId"])
 brm.futures_cancel_all_open_orders
 
 # %%

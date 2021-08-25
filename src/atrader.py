@@ -4,10 +4,10 @@ from unicorn_binance_rest_api.unicorn_binance_rest_api_exceptions import *
 
 
 class ATrader:
-    def __init__(self, manager, strategy, symbol, leverage, is_real):
+    def __init__(self, manager, strategy, symbol, leverage, is_real, qty=0.002):
 
         if symbol == "ethusdt" or symbol == "ETHUSDT":
-            self.qty = 0.002
+            self.qty = qty
         else:
             raise Exception("as of now the only allowed symbol is 'ethusdt'")
 
@@ -154,7 +154,7 @@ class ATrader:
     def _process_stream_data(self):
 
         while self.keep_running:
-            time.sleep(0.1)
+            time.sleep(1 / self.manager.rate / 10)
             if self.bwsm.is_manager_stopping():
                 exit(0)
 
@@ -453,7 +453,7 @@ class ATrader:
                 )
 
                 if sl_order_status["status"] == "FILLED":
-                    print("sl")
+                    # print("sl")
                     exit_price = float(sl_order_status["avgPrice"])
                     exit_time = to_datetime_tz(sl_order_status["updateTime"], unit="ms")
 
@@ -492,7 +492,7 @@ class ATrader:
                 )
 
                 if tp_order_status["status"] == "FILLED":
-                    print("tp")
+                    # print("tp")
                     exit_price = float(tp_order_status["avgPrice"])
                     exit_time = to_datetime_tz(tp_order_status["updateTime"], unit="ms")
 

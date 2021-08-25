@@ -26,7 +26,7 @@ class Manager:
         )
         self.rate = rate  # debbug purposes. will be removed
 
-    def start_trader(self, strategy, symbol, leverage=1, is_real=False):
+    def start_trader(self, strategy, symbol, leverage=1, is_real=False, qty=0.002):
 
         trader_name = name_trader(strategy, symbol)
 
