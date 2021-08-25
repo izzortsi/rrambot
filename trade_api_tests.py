@@ -120,7 +120,6 @@ tp_order2 = brm.futures_create_order(
 )
 
 
-
 # %%
 tp_order2 = None
 # %%
