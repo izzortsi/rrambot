@@ -14,6 +14,7 @@ parser.add_argument("-tp", "--takeprofit", default=1.5, type=float)
 parser.add_argument("-ew", "--entry_window", default=2, type=int)
 parser.add_argument("-xw", "--exit_window", default=1, type=int)
 parser.add_argument("-L", "--leverage", default=1, type=int)
+parser.add_argument("-R", "--is_real", default=False, type=bool)
 args = parser.parse_args()
 
 rate = args.rate
@@ -22,6 +23,7 @@ sl = args.stoploss
 leverage = args.leverage
 ew = args.entry_window
 xw = args.exit_window
+is_real = args.is_real
 # %%
 
 # from src.grabber import *
@@ -46,8 +48,8 @@ if __name__ == "__main__":
 
     # %%
 
-    t1 = m.start_trader(strat, symbols[0], leverage=leverage)
-    t2 = m.start_trader(strat, symbols[1], leverage=leverage)
+    t1 = m.start_trader(strat, symbols[0], leverage=leverage, is_real=is_real)
+    # t2 = m.start_trader(strat, symbols[1], leverage=leverage)
     # t3 = m.start_trader(strat, syms[2], leverage=leverage)
 
 # %%

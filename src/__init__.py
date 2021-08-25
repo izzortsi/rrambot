@@ -108,6 +108,12 @@ def strf_epoch(epochtime, fmt="%j-%y_%H-%M-%S"):
     return datetime.fromtimestamp(epochtime).strftime(fmt)
 
 
+f_tp_price = lambda price, tp, lev: f"{(price * (1+(tp/lev)/100)):.2f}"
+f_sl_price = (
+    lambda price, sl, lev: f"{(price * (1+(sl/lev)/100)):.2f}"
+)  # sl is supposed negative
+
+
 # LOGGER CONFIG
 LOG_DATEFORMAT = "%j-%y_%H-%M-%S"
 

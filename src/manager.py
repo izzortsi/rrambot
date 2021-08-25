@@ -26,12 +26,12 @@ class Manager:
         )
         self.rate = rate  # debbug purposes. will be removed
 
-    def start_trader(self, strategy, symbol, leverage=1):
+    def start_trader(self, strategy, symbol, leverage=1, is_real=False):
 
         trader_name = name_trader(strategy, symbol)
 
         if trader_name not in self.get_traders():
-            trader = ATrader(self, strategy, symbol, leverage=leverage)
+            trader = ATrader(self, strategy, symbol, leverage, is_real)
             trader._start_new_stream()
             self.traders[trader.name] = trader
             return trader
@@ -55,10 +55,10 @@ class Manager:
             pass
         pass
 
-    def stop(self, q=None):
+    def stop(self, kill=0):
         self.close_traders()
         self.bwsm.stop_manager_with_all_streams()
-        if q == 1:
+        if kill == 0:
             os.sys.exit(0)
 
     def traders_status(self):
