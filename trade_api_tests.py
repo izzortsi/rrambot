@@ -25,16 +25,16 @@ f_tp_price = lambda price, tp, lev: f"{(price * (1+(tp/lev)/100)):.2f}"
 f_sl_price = lambda price, sl, lev: f"{(price * (1-(sl/lev)/100)):.2f}"
 # %%
 
-lev = 100
+lev = 25
 
 sl = 0.2
-# sl / 100
-tp = 4
-# tp / 100
-# tp_price = f_tp_price(price, tp, lev)
-# sl_price = f_sl_price(price, sl, lev)
-# tp_price
-# sl_price
+sl / lev
+tp = 2.5
+tp / lev
+tp_price = f_tp_price(price, tp, lev)
+sl_price = f_sl_price(price, sl, lev)
+tp_price
+sl_price
 
 # %%
 
@@ -49,6 +49,7 @@ try:
         type="MARKET",
         quantity="0.002",
         priceProtect=False,
+        workingType="MARK_PRICE",
     )
 except BinanceAPIException as error:
     print(type(error))
@@ -99,7 +100,7 @@ else:
                 workingType="MARK_PRICE",
                 quantity=qty,
                 reduceOnly=True,
-                priceProtect=True,
+                priceProtect=False,
                 timeInForce="GTE_GTC",
             )
         except BinanceAPIException as error:

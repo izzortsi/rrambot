@@ -31,7 +31,7 @@ class Manager:
         trader_name = name_trader(strategy, symbol)
 
         if trader_name not in self.get_traders():
-            trader = ATrader(self, strategy, symbol, leverage, is_real)
+            trader = ATrader(self, strategy, symbol, leverage, is_real, qty)
             trader._start_new_stream()
             self.traders[trader.name] = trader
             return trader

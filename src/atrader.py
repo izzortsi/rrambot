@@ -4,7 +4,7 @@ from unicorn_binance_rest_api.unicorn_binance_rest_api_exceptions import *
 
 
 class ATrader:
-    def __init__(self, manager, strategy, symbol, leverage, is_real, qty=0.002):
+    def __init__(self, manager, strategy, symbol, leverage, is_real, qty):
 
         if symbol == "ethusdt" or symbol == "ETHUSDT":
             self.qty = qty
@@ -371,7 +371,8 @@ class ATrader:
                 side="BUY",
                 type="MARKET",
                 quantity=self.qty,
-                priceProtect=True,
+                priceProtect=False,
+                workingType="MARK_PRICE",
             )
 
             self.position = self.client.futures_position_information(symbol="ethusdt")
@@ -399,7 +400,7 @@ class ATrader:
                     workingType="MARK_PRICE",
                     quantity=self.qty,
                     reduceOnly=True,
-                    priceProtect=True,
+                    priceProtect=False,
                     timeInForce="GTE_GTC",
                 )
             except BinanceAPIException as error:
@@ -411,8 +412,9 @@ class ATrader:
                             symbol="ETHUSDT",
                             side="SELL",
                             type="MARKET",
-                            quantity=0.002,
-                            priceProtect=True,
+                            workingType="MARK_PRICE",
+                            quantity=self.qty,
+                            priceProtect=False,
                         )
                     except BinanceAPIError as error:
                         # print(type(error))
@@ -427,7 +429,7 @@ class ATrader:
                         workingType="MARK_PRICE",
                         quantity=self.qty,
                         reduceOnly=True,
-                        priceProtect=True,
+                        priceProtect=False,
                         timeInForce="GTE_GTC",
                     )
                 except BinanceAPIException as error:
