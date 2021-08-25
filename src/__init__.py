@@ -108,10 +108,18 @@ def strf_epoch(epochtime, fmt="%j-%y_%H-%M-%S"):
     return datetime.fromtimestamp(epochtime).strftime(fmt)
 
 
-f_tp_price = lambda price, tp, lev: f"{(price * (1+(tp/lev)/100)):.2f}"
-f_sl_price = (
-    lambda price, sl, lev: f"{(price * (1+(sl/lev)/100)):.2f}"
-)  # sl is supposed negative
+def f_tp_price(price, tp, lev, side="BUY"):
+    if side == "BUY":
+        return f"{(price * (1+(tp/lev)/100)):.2f}"
+    elif side == "SELL":
+        return f"{(price * (1-(tp/lev)/100)):.2f}"
+
+
+def f_sl_price(price, sl, lev, side="BUY"):
+    if side == "BUY":
+        return f"{(price * (1+(sl/lev)/100)):.2f}"
+    elif side == "SELL":
+        return f"{(price * (1-(sl/lev)/100)):.2f}"  # sl is supposed negative
 
 
 # LOGGER CONFIG

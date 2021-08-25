@@ -7,9 +7,13 @@ class ATrader:
     def __init__(self, manager, strategy, symbol, leverage, is_real, qty):
 
         if symbol == "ethusdt" or symbol == "ETHUSDT":
-            self.qty = qty
+            self.qty = "0.001"
+        elif symbol == "bnbusdt" or symbol == "BNBUSDT":
+            self.qty = "0.01"
         else:
-            raise Exception("as of now the only allowed symbol is 'ethusdt'")
+            raise Exception(
+                "as of now the only allowed symbols are 'ethusdt' and 'bnbusdt'"
+            )
 
         self.manager = manager
         self.bwsm = manager.bwsm
@@ -154,7 +158,7 @@ class ATrader:
     def _process_stream_data(self):
 
         while self.keep_running:
-            time.sleep(1 / self.manager.rate / 10)
+            time.sleep(0.1)
             if self.bwsm.is_manager_stopping():
                 exit(0)
 
@@ -294,12 +298,10 @@ class ATrader:
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
-                profit = (exit_price - self.entry_price) * self.leverage
-                percentual_profit = (
-                    ((exit_price - self.entry_price) / self.entry_price)
-                    * 100
-                    * self.leverage
+                profit = (exit_price - self.entry_price) * self.leverage - 0.0002 * (
+                    self.entry_price + exit_price
                 )
+                percentual_profit = (profit / self.entry_price) * 100
 
                 self.cum_profit += percentual_profit
                 self.confirmatory_data.append(
@@ -326,12 +328,10 @@ class ATrader:
                 exit_price = self.data_window.close.values[-1]
                 exit_time = self.data_window.date.values[-1]
 
-                profit = (exit_price - self.entry_price) * self.leverage
-                percentual_profit = (
-                    ((exit_price - self.entry_price) / self.entry_price)
-                    * 100
-                    * self.leverage
+                profit = (exit_price - self.entry_price) * self.leverage - 0.0002 * (
+                    self.entry_price + exit_price
                 )
+                percentual_profit = (profit / self.entry_price) * 100
 
                 self.cum_profit += percentual_profit
                 self.confirmatory_data.append(
@@ -367,7 +367,7 @@ class ATrader:
         try:
 
             new_position = self.client.futures_create_order(
-                symbol="ETHUSDT",
+                symbol=self.symbol,
                 side="BUY",
                 type="MARKET",
                 quantity=self.qty,
@@ -375,7 +375,7 @@ class ATrader:
                 workingType="MARK_PRICE",
             )
 
-            self.position = self.client.futures_position_information(symbol="ethusdt")
+            self.position = self.client.futures_position_information(symbol=self.symbol)
             self.entry_price = float(self.position[0]["entryPrice"])
             self.qty = self.position[0]["positionAmt"]
             self.tp_price = f_tp_price(
@@ -393,7 +393,7 @@ class ATrader:
         else:
             try:
                 self.sl_order = self.client.futures_create_order(
-                    symbol="ETHUSDT",
+                    symbol=self.symbol,
                     side="SELL",
                     type="STOP_MARKET",
                     stopPrice=self.sl_price,
@@ -409,7 +409,7 @@ class ATrader:
                     self.logger.info(f"sl order, {error}")
                     try:
                         self.sl_order = self.client.futures_create_order(
-                            symbol="ETHUSDT",
+                            symbol=self.symbol,
                             side="SELL",
                             type="MARKET",
                             workingType="MARK_PRICE",
@@ -422,7 +422,7 @@ class ATrader:
             else:
                 try:
                     self.tp_order = self.client.futures_create_order(
-                        symbol="ETHUSDT",
+                        symbol=self.symbol,
                         side="SELL",
                         type="TAKE_PROFIT_MARKET",
                         stopPrice=self.tp_price,

@@ -21,94 +21,156 @@ bwsm = ubw.BinanceWebSocketApiManager(
 # %%
 
 
-f_tp_price = lambda price, tp, lev: f"{(price * (1+(tp/lev)/100)):.2f}"
-f_sl_price = lambda price, sl, lev: f"{(price * (1-(sl/lev)/100)):.2f}"
+def f_tp_price(price, tp, lev, side="BUY"):
+    if side == "BUY":
+        return f"{(price * (1+(tp/lev)/100)):.2f}"
+    elif side == "SELL":
+        return f"{(price * (1-(tp/lev)/100)):.2f}"
+
+
+def f_sl_price(price, sl, lev, side="BUY"):
+    if side == "BUY":
+        return f"{(price * (1+(sl/lev)/100)):.2f}"
+    elif side == "SELL":
+        return f"{(price * (1-(sl/lev)/100)):.2f}"
+
+
+# %%
+symbol = "bnbusdt"
+lev = 60
+
 # %%
 
-lev = 25
-
-sl = 0.2
+sl = -3
 sl / lev
-tp = 2.5
+tp = 10
 tp / lev
+
+# %%
+if symbol == "bnbusdt":
+    qty = 0.01
+elif symbol == "ethusdt":
+    qty = 0.001
+
+# %%
+
 tp_price = f_tp_price(price, tp, lev)
 sl_price = f_sl_price(price, sl, lev)
 tp_price
 sl_price
+ticker = brm.get_symbol_ticker(symbol=symbol.upper())
+price = float(ticker["price"])
+price
+
+# price = 500.55
+# %%
+100 * (float(sl_price) - price) / price
+# %%
+"""
+isso aqui é o seguinte: se o min notional é 5usd,
+tem q valer q qty * price >= 5usd.
+
+"""
+calc_notional = lambda lev, market_value: market_value / lev
 
 # %%
+notional = calc_notional(lev, price)
+notional
 
-brm.futures_change_leverage(symbol="ethusdt", leverage=lev)
+# %%
+(qty * price)
+qty * price
 # %%
 
+brm.futures_change_leverage(symbol=symbol, leverage=lev)
 # %%
-try:
-    new_position = brm.futures_create_order(
-        symbol="ETHUSDT",
-        side="BUY",
-        type="MARKET",
-        quantity="0.002",
-        priceProtect=False,
-        workingType="MARK_PRICE",
-    )
-except BinanceAPIException as error:
-    print(type(error))
-    print("positioning, ", error)
-else:
-    position = brm.futures_position_information(symbol="ethusdt")
-    price = float(position[0]["entryPrice"])
-    qty = position[0]["positionAmt"]
-    tp_price = f_tp_price(price, tp, lev)
-    sl_price = f_sl_price(price, sl, lev)
-    tp_price
-    sl_price
+# SIDE = "BUY"
+S = "SELL"
+B = "BUY"
+# %%
+def send_order(tp, sl, side="BUY", protect=False):
+    if side == "SELL":
+        counterside = "BUY"
+    elif side == "BUY":
+        counterside = "SELL"
 
     try:
-        stop_order = brm.futures_create_order(
-            symbol="ETHUSDT",
-            side="SELL",
-            type="STOP_MARKET",
-            stopPrice=sl_price,
-            workingType="MARK_PRICE",
+        new_position = brm.futures_create_order(
+            symbol=symbol,
+            side=side,
+            type="MARKET",
             quantity=qty,
-            reduceOnly=True,
-            priceProtect=False,
-            timeInForce="GTE_GTC",
+            priceProtect=protect,
+            workingType="CONTRACT_PRICE",
         )
+        print(new_position)
     except BinanceAPIException as error:
-        if error.code == -2021:
-            print(type(error))
-            print("sl order, ", error)
-            try:
-                brm.futures_create_order(
-                    symbol="ETHUSDT",
-                    side="SELL",
-                    type="MARKET",
-                    quantity=0.002,
-                    priceProtect=False,
-                )
-            except BinanceAPIError as error:
-                print(type(error))
-                print("sl order 2, ", error)
+        print(type(error))
+        print("positioning, ", error)
     else:
+        position = brm.futures_position_information(symbol=symbol)
+        price = float(position[0]["entryPrice"])
+        tp_price = f_tp_price(price, tp, lev, side=side)
+        sl_price = f_sl_price(price, sl, lev, side=side)
+        print(
+            f"""price: {price}
+                  tp_price: {tp_price}
+                  sl_price: {sl_price}"""
+        )
+
         try:
-            tp_order = brm.futures_create_order(
-                symbol="ETHUSDT",
-                side="SELL",
-                type="TAKE_PROFIT_MARKET",
-                stopPrice=tp_price,
-                workingType="MARK_PRICE",
+            stop_order = brm.futures_create_order(
+                symbol=symbol,
+                side=counterside,
+                type="STOP_MARKET",
+                stopPrice=sl_price,
+                workingType="CONTRACT_PRICE",
                 quantity=qty,
                 reduceOnly=True,
-                priceProtect=False,
+                priceProtect=protect,
                 timeInForce="GTE_GTC",
             )
         except BinanceAPIException as error:
+            if error.code == -2021:
+                print(type(error))
+                print("sl order, ", error)
+                # try:
+                #     stop_order = brm.futures_create_order(
+                #         symbol=symbol,
+                #         side=counterside,
+                #         type="STOP_MARKET",
+                #         stopPrice=sl_price,
+                #         workingType="CONTRACT_PRICE",
+                #         quantity=qty,
+                #         reduceOnly=True,
+                #         priceProtect=protect,
+                #         timeInForce="GTE_GTC",
+                #     )
+                # except BinanceAPIError as error:
+                #     print(type(error))
+                #     print("sl order 2, ", error)
+        else:
+            try:
+                tp_order = brm.futures_create_order(
+                    symbol=symbol,
+                    side=counterside,
+                    type="TAKE_PROFIT_MARKET",
+                    stopPrice=tp_price,
+                    workingType="CONTRACT_PRICE",
+                    quantity=qty,
+                    reduceOnly=True,
+                    priceProtect=protect,
+                    timeInForce="GTE_GTC",
+                )
+            except BinanceAPIException as error:
 
-            print(type(error))
-            print("tp order, ", error)
+                print(type(error))
+                print("tp order, ", error)
+    return
 
 
+# %%
+send_order(tp, sl, side=S, protect=False)
 # %%
 
 # %%
