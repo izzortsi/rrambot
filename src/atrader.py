@@ -13,31 +13,33 @@ class ATrader:
         self.symbol = symbol
         self.leverage = leverage
         self.is_real = is_real
+        if self.is_real:
+            if self.symbol == "ethusdt" or self.symbol == "ETHUSDT":
+                min = 0.001
+                ticker = self.client.get_symbol_ticker(symbol=self.symbol.upper())
+                price = float(ticker["price"])
+                multiplier = np.ceil(5 / (price * min))
+                self.qty = f"{(multiplier*min):.3f}"
+            elif self.symbol == "bnbusdt" or self.symbol == "BNBUSDT":
+                min = 0.01
+                ticker = self.client.get_symbol_ticker(symbol=self.symbol.upper())
+                price = float(ticker["price"])
+                multiplier = np.ceil(5 / (price * min))
+                self.qty = f"{(multiplier*min):.2f}"
+            elif self.symbol == "btcusdt" or self.symbol == "BTCUSDT":
+                min = 0.001
+                ticker = self.client.get_symbol_ticker(symbol=self.symbol.upper())
+                price = float(ticker["price"])
+                multiplier = np.ceil(5 / (price * min))
+                self.qty = f"{(multiplier*min):.3f}"
+            else:
+                raise Exception(
+                    "as of now the only allowed symbols are 'ethusdt' and 'bnbusdt'"
+                )
 
-        if self.symbol == "ethusdt" or self.symbol == "ETHUSDT":
-            min = 0.001
-            ticker = self.client.get_symbol_ticker(symbol=self.symbol.upper())
-            price = float(ticker["price"])
-            multiplier = np.ceil(5 / (price * min))
-            self.qty = f"{(multiplier*min):.3f}"
-        elif self.symbol == "bnbusdt" or self.symbol == "BNBUSDT":
-            min = 0.01
-            ticker = self.client.get_symbol_ticker(symbol=self.symbol.upper())
-            price = float(ticker["price"])
-            multiplier = np.ceil(5 / (price * min))
-            self.qty = f"{(multiplier*min):.2f}"
-        elif self.symbol == "btcusdt" or self.symbol == "BTCUSDT":
-            min = 0.001
-            ticker = self.client.get_symbol_ticker(symbol=self.symbol.upper())
-            price = float(ticker["price"])
-            multiplier = np.ceil(5 / (price * min))
-            self.qty = f"{(multiplier*min):.3f}"
-        else:
-            raise Exception(
-                "as of now the only allowed symbols are 'ethusdt' and 'bnbusdt'"
-            )
-
-        self.client.futures_change_leverage(symbol=self.symbol, leverage=self.leverage)
+                self.client.futures_change_leverage(
+                    symbol=self.symbol, leverage=self.leverage
+                )
 
         self.name = name_trader(strategy, self.symbol)
         # self.profits = []
@@ -272,13 +274,17 @@ class ATrader:
                         else:
                             self.data_window.update(new_row)
 
-                        self._act_on_signal()
+                        if self.is_real:
+                            self._really_act_on_signal()
+                        else:
+                            self._test_act_on_signal()
+
                         self._drop_trades_to_csv()
 
                 except Exception as e:
                     self.logger.info(f"{e}")
 
-    def _act_on_signal(self):
+    def _really_act_on_signal(self):
         """
         aqui eu tenho que
         1) mudar o sinal de entrada pra incluir as duas direçoes
