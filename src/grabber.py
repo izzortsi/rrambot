@@ -26,6 +26,14 @@ class DataGrabber:
         )
         return self.trim_data(klines)
 
+    def get_historical_data(
+        self, symbol="BTCUSDT", tframe="1h", limit=500, startTime=None, endTime=None
+    ):
+        klines = self.client.get_historical_klines(
+            symbol, tframe, startTime, end_str=endTime, limit=limit
+        )
+        return self.trim_data(klines)
+
     def trim_data(self, klines):
 
         df = pd.DataFrame(data=klines)
