@@ -73,7 +73,8 @@ class ATrader:
         self.exit_time = None
         self.last_price = None
         self.now_time = None
-        self.close_order = None
+        self.opening_order = None
+        self.closing_order = None
         # self.uptime = None
 
         strf_init_time = strf_epoch(self.init_time, fmt="%H-%M-%S")
@@ -232,13 +233,7 @@ class ATrader:
 
                         dohlcv = pd.DataFrame(
                             np.atleast_2d(np.array([self.now_time, o, h, l, c])),
-                            columns=[
-                                "date",
-                                "open",
-                                "high",
-                                "low",
-                                "close",
-                            ],
+                            columns=["date", "open", "high", "low", "close"],
                             index=[last_index],
                         )
 
@@ -318,6 +313,92 @@ class ATrader:
                 except BinanceAPIException as error:
                     self.logger.info(f"sl order, {error}")
 
+    def _test_act_on_signal(self):
+        """
+        aqui eu tenho que
+        1) mudar o sinal de entrada pra incluir as duas direçoes
+        2) essa é a função que faz os trades, efetivamente. falta isso
+        """
+
+        if self.is_positioned:
+            # print(
+            #     self.strategy.stoploss_check(self, self.data_window, self.entry_price)
+            # )
+            if self.strategy.stoploss_check(self, self.data_window, self.entry_price):
+                # print("sl")
+                self.exit_price = self.data_window.close.values[-1]
+                self.exit_time = self.data_window.date.values[-1]
+
+                profit = (
+                    self.exit_price
+                    - self.entry_price
+                    - 0.0002 * (self.exit_price + self.entry_price)
+                ) * self.leverage
+                percentual_profit = (
+                    ((exit_price - self.entry_price) / self.entry_price)
+                    * 100
+                    * self.leverage
+                )
+
+                self.cum_profit += percentual_profit
+                self.confirmatory_data.append(
+                    {
+                        "type": "sl",
+                        "entry_time": self.entry_time,
+                        "entry_price": self.entry_price,
+                        "exit_time": exit_time,
+                        "exit_price": exit_price,
+                        "percentual_difference": percentual_profit,
+                        "cumulative_profit": self.cum_profit,
+                    }
+                )
+
+                self.logger.info(
+                    f"STOPLOSS: Δabs: {profit}; Δ%: {percentual_profit}%; cumulative profit: {self.cum_profit}%"
+                )
+
+                self._change_position()
+                self.entry_price = None
+
+            elif self.strategy.exit_signal(self, self.data_window, self.entry_price):
+                # print("tp")
+                self.exit_price = self.data_window.close.values[-1]
+                self.exit_time = self.data_window.date.values[-1]
+
+                profit = (exit_price - self.entry_price) * self.leverage
+                percentual_profit = (
+                    ((exit_price - self.entry_price) / self.entry_price)
+                    * 100
+                    * self.leverage
+                )
+
+                self.cum_profit += percentual_profit
+                self.confirmatory_data.append(
+                    {
+                        "type": "tp",
+                        "entry_time": self.entry_time,
+                        "entry_price": self.entry_price,
+                        "exit_time": exit_time,
+                        "exit_price": exit_price,
+                        "percentual_difference": percentual_profit,
+                        "cumulative_profit": self.cum_profit,
+                    }
+                )
+
+                self.logger.info(
+                    f"PROFIT: Δabs: {profit}; Δ%: {percentual_profit}%; cumulative profit: {self.cum_profit}%"
+                )
+
+                self._change_position()
+                self.entry_price = None
+
+        else:
+            if self.strategy.entry_signal(self, self.data_window):
+                self.entry_price = self.data_window.close.values[-1]
+                self.entry_time = self.data_window.date.values[-1]
+                self.logger.info(f"ENTRY: E:{self.entry_price} at t:{self.entry_time}")
+                self._change_position()
+
     def _start_position(self):
         """lembrar de settar/formatar quantity etc pro caso geral, com qualquer
         coin"""
@@ -337,7 +418,7 @@ class ATrader:
             self.entry_time = to_datetime_tz(self.position["updateTime"], unit="ms")
 
     def _close_position(self):
-        self.close_order = self.client.futures_create_order(
+        self.closing_order = self.client.futures_create_order(
             symbol=self.symbol,
             side="SELL",
             type="MARKET",
@@ -347,9 +428,9 @@ class ATrader:
             priceProtect=False,
             newOrderRespType="RESULT",
         )
-        if self.close_order["status"] == "FILLED":
-            self.exit_price = float(self.close_order["avgPrice"])
-            self.exit_time = to_datetime_tz(self.close_order["updateTime"], unit="ms")
+        if self.closing_order["status"] == "FILLED":
+            self.exit_price = float(self.closing_order["avgPrice"])
+            self.exit_time = to_datetime_tz(self.closing_order["updateTime"], unit="ms")
 
     def _register_trade_data(self, tp_or_sl):
         profit = (self.exit_price - self.entry_price) - 0.0002 * (
