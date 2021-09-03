@@ -58,3 +58,28 @@ def normalize_data(df, train_df, val_df, test_df):
     df_std = df_std.melt(var_name="Column", value_name="Normalized")
 
     return train_df, val_df, test_df, df_std
+
+
+def check_next_vals(df, target, n=5, tp=1):
+    df[target] = 0
+    closes = df.close
+    for i, c in enumerate(closes):
+
+        if np.all((c - closes[i + 1 :].head(n)) > 0):
+            df[target].iloc[i] = 1
+        elif np.all((c - closes[i + 1 :].head(n)) < 0):
+            df[target].iloc[i] = -1
+
+
+# %%
+
+
+def check_next_vals_tp(df, target, n=7, tp=1):
+    df[target] = 0
+    closes = df.close
+    for i, c_i in enumerate(closes):
+        for c_j in closes[i + 1 :].head(n):
+            if 100 * (c_j - c_i) / c_i >= tp:
+                df[target].iloc[i] = 1
+            elif 100 * (c_j - c_i) / c_i <= -tp:
+                df[target].iloc[i] = -1

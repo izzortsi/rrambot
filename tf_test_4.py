@@ -256,7 +256,10 @@ lstm_model = tf.keras.models.Sequential(
     [
         # Shape [batch, time, features] => [batch, time, lstm_units]
         tf.keras.layers.LSTM(32, return_sequences=True),
-        # Shape => [batch, time, features]
+        tf.keras.layers.Conv1D(
+            filters=32, kernel_size=(CONV_WIDTH,), activation="relu"
+        ),
+        tf.keras.layers.Dense(units=32),
         tf.keras.layers.Dense(units=1),
     ]
 )
@@ -264,14 +267,14 @@ lstm_model = tf.keras.models.Sequential(
 print("Input shape:", wide_window.example[0].shape)
 print("Output shape:", lstm_model(wide_window.example[0]).shape)
 # %%
-history = compile_and_fit(lstm_model, wide_window)
+history = compile_and_fit(lstm_model, wide_conv_window)
 
 IPython.display.clear_output()
-val_performance["LSTM"] = lstm_model.evaluate(wide_window.val)
-performance["LSTM"] = lstm_model.evaluate(wide_window.test, verbose=0)
+val_performance["LSTM"] = lstm_model.evaluate(wide_conv_window.val)
+performance["LSTM"] = lstm_model.evaluate(wide_conv_window.test, verbose=0)
 # %%
 
-wide_window.plot(lstm_model)
+wide_conv_window.plot(lstm_model)
 
 # %%
 x = np.arange(len(performance))

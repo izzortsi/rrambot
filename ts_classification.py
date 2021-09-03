@@ -21,6 +21,7 @@ import tensorflow as tf
 
 # %%
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from tensorflow.keras import layers
 from tensorflow.keras.layers.experimental import preprocessing
 
@@ -51,6 +52,13 @@ data = get_indicators(candles_df)
 
 df = data
 # %%
+
+std_scaler = StandardScaler()
+F_scaled = std_scaler.fit_transform(np.array(data.EMA_FORCE_15.array).reshape(-1, 1))
+plt.plot(F_scaled)
+plt.sbuplots()
+plt.subplot(211).plot(F_scaled)
+plt.subplot(211).plot(df.close)
 
 
 def train_val_test(df):
