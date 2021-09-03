@@ -1,6 +1,6 @@
 from tradingview_ta import TA_Handler, Interval, Exchange
 import tradingview_ta
-from binance import binance_f
+
 from unicorn_binance_rest_api import *
 import os
 
@@ -62,7 +62,7 @@ analysis.indicators["MACD.macd"]
 analysis.indicators["MACD.signal"]
 
 # %%
-tfs = ["1m", "5m", "15m", "30m", "1h", "4h"]
+tfs = ["1m", "5m"]
 
 # %%
 handlers = make_handlers("SUSHIUSDT", tfs)
@@ -70,4 +70,3 @@ handlers
 
 # %%
 check_signals(handlers)
-bnb

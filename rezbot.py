@@ -3,7 +3,7 @@
 from src import *
 from src.manager import Manager
 from src.atrader import ATrader
-from src.strategy import Strategy
+from src.strategy import MacdStrategy, TAStrategy
 import argparse
 
 # %%
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     # strategy2 = Strategy("macd", "bnbusdt", "1m", -0.33, 3.5, 2, 2, macd_params=params)
     # strategy_params = ["macd", "1m", -0.2, 1.5, 2, 1]
     strategy_params = ["macd", "1m", sl, tp, ew, xw]
-    strat = Strategy(*strategy_params)
+    strat = TAStrategy(*strategy_params)
     # strategy2 = Strategy("macd", "1m", -0.2, 1.5, 2, 1)
     # strategy3 = Strategy("macd", "1m", -0.2, 1.5, 2, 1)
 
@@ -50,10 +50,11 @@ if __name__ == "__main__":
 
     # %%
 
-    t1 = m.start_trader(strat, symbols[0], leverage=leverage, is_real=is_real, qty=qty)
-    # t2 = m.start_trader(
-    #     strat, symbols[1], leverage=leverage, is_real=is_real, qty=qty)
-    # t3 = m.start_trader(
-    #     strat, symbols[2], leverage=leverage, is_real=is_real, qty=qty)
+    t1 = m.start_trader(
+        strat, symbols[0], leverage=leverage, is_real=is_real, qty=qty)
+    t2 = m.start_trader(
+        strat, symbols[1], leverage=leverage, is_real=is_real, qty=qty)
+    t3 = m.start_trader(
+        strat, symbols[2], leverage=leverage, is_real=is_real, qty=qty)
 
 # %%

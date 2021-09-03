@@ -13,22 +13,28 @@ class ATrader:
         self.symbol = symbol
         self.leverage = leverage
         self.is_real = is_real
+        self.ta_handlers = make_handlers(self.symbol, ["1m", "5m"])
+        self.check_signals = check_signals
+
         if self.is_real:
             if self.symbol == "ethusdt" or self.symbol == "ETHUSDT":
                 min = 0.001
-                ticker = self.client.get_symbol_ticker(symbol=self.symbol.upper())
+                ticker = self.client.get_symbol_ticker(
+                    symbol=self.symbol.upper())
                 price = float(ticker["price"])
                 multiplier = np.ceil(5 / (price * min))
                 self.qty = f"{(multiplier*min):.3f}"
             elif self.symbol == "bnbusdt" or self.symbol == "BNBUSDT":
                 min = 0.01
-                ticker = self.client.get_symbol_ticker(symbol=self.symbol.upper())
+                ticker = self.client.get_symbol_ticker(
+                    symbol=self.symbol.upper())
                 price = float(ticker["price"])
                 multiplier = np.ceil(5 / (price * min))
                 self.qty = f"{(multiplier*min):.2f}"
             elif self.symbol == "btcusdt" or self.symbol == "BTCUSDT":
                 min = 0.001
-                ticker = self.client.get_symbol_ticker(symbol=self.symbol.upper())
+                ticker = self.client.get_symbol_ticker(
+                    symbol=self.symbol.upper())
                 price = float(ticker["price"])
                 multiplier = np.ceil(5 / (price * min))
                 self.qty = f"{(multiplier*min):.3f}"
@@ -59,6 +65,7 @@ class ATrader:
         self.grabber = DataGrabber(self.client)
         self.data_window = self._get_initial_data_window()
         self.running_candles = []  # self.data_window.copy(deep=True)
+        self.ta_signal = self.check_signals(self.ta_handlers)
         # self.data = None
 
         self.start_time = time.time()  # wont change, used to compute uptime
@@ -75,6 +82,8 @@ class ATrader:
         self.now_time = None
         self.opening_order = None
         self.closing_order = None
+        self.current_profit = None
+        self.current_percentual_profit = None
         # self.uptime = None
 
         strf_init_time = strf_epoch(self.init_time, fmt="%H-%M-%S")
@@ -84,7 +93,8 @@ class ATrader:
             f"{self.name}-logger",
             os.path.join(logs_for_this_run, f"{self.name_for_logs}.log"),
         )
-        self.csv_log_path = os.path.join(logs_for_this_run, f"{self.name_for_logs}.csv")
+        self.csv_log_path = os.path.join(
+            logs_for_this_run, f"{self.name_for_logs}.csv")
         self.csv_log_path_candles = os.path.join(
             logs_for_this_run, f"{self.name_for_logs}_candles.csv"
         )
@@ -232,13 +242,15 @@ class ATrader:
                         self.last_price = c
 
                         dohlcv = pd.DataFrame(
-                            np.atleast_2d(np.array([self.now_time, o, h, l, c])),
+                            np.atleast_2d(
+                                np.array([self.now_time, o, h, l, c])),
                             columns=["date", "open", "high", "low", "close"],
                             index=[last_index],
                         )
 
                         tf_as_seconds = (
-                            interval_to_milliseconds(self.strategy.timeframe) * 0.001
+                            interval_to_milliseconds(
+                                self.strategy.timeframe) * 0.001
                         )
 
                         new_close = dohlcv.close
@@ -259,13 +271,16 @@ class ATrader:
                             >= tf_as_seconds / self.manager.rate
                         ):
 
-                            self.data_window.drop(index=[0], axis=0, inplace=True)
+                            self.data_window.drop(
+                                index=[0], axis=0, inplace=True)
                             self.data_window = self.data_window.append(
                                 new_row, ignore_index=True
                             )
 
                             self.running_candles.append(dohlcv)
                             self.init_time = time.time()
+                            self.ta_signal = self.check_signals(
+                                self.ta_handlers)
                         else:
                             self.data_window.update(new_row)
 
@@ -287,7 +302,7 @@ class ATrader:
         """
 
         if not self.is_positioned:
-            if self.strategy.entry_signal(self, self.data_window):
+            if self.strategy.entry_signal(self):
                 try:
                     self._start_position()
                     self.logger.info(
@@ -298,14 +313,17 @@ class ATrader:
                     # print(type(error))
                     self.logger.info(f"positioning,  {error}")
         else:
-            if self.strategy.exit_signal(self, self.data_window, self.entry_price):
+
+            self._set_current_profits()
+
+            if self.strategy.exit_signal(self):
                 try:
                     self._close_position()
                     self._register_trade_data("TP")
                     self._change_position()
                 except BinanceAPIException as error:
                     self.logger.info(f"tp order, {error}")
-            elif self.strategy.stoploss_check(self, self.data_window, self.entry_price):
+            elif self.strategy.stoploss_check(self):
                 try:
                     self._close_position()
                     self._register_trade_data("SL")
@@ -321,83 +339,45 @@ class ATrader:
         """
 
         if self.is_positioned:
-            # print(
-            #     self.strategy.stoploss_check(self, self.data_window, self.entry_price)
-            # )
-            if self.strategy.stoploss_check(self, self.data_window, self.entry_price):
+
+            self._set_current_profits()
+
+            if self.strategy.stoploss_check(self):
                 # print("sl")
-                self.exit_price = self.data_window.close.values[-1]
-                self.exit_time = self.data_window.date.values[-1]
 
-                profit = (
-                    self.exit_price
-                    - self.entry_price
-                    - 0.0002 * (self.exit_price + self.entry_price)
-                ) * self.leverage
-                percentual_profit = (
-                    ((exit_price - self.entry_price) / self.entry_price)
-                    * 100
-                    * self.leverage
-                )
-
-                self.cum_profit += percentual_profit
-                self.confirmatory_data.append(
-                    {
-                        "type": "sl",
-                        "entry_time": self.entry_time,
-                        "entry_price": self.entry_price,
-                        "exit_time": exit_time,
-                        "exit_price": exit_price,
-                        "percentual_difference": percentual_profit,
-                        "cumulative_profit": self.cum_profit,
-                    }
-                )
-
-                self.logger.info(
-                    f"STOPLOSS: Δabs: {profit}; Δ%: {percentual_profit}%; cumulative profit: {self.cum_profit}%"
-                )
+                self._register_trade_data("SL")
 
                 self._change_position()
                 self.entry_price = None
 
-            elif self.strategy.exit_signal(self, self.data_window, self.entry_price):
+            elif self.strategy.exit_signal(self):
                 # print("tp")
-                self.exit_price = self.data_window.close.values[-1]
-                self.exit_time = self.data_window.date.values[-1]
 
-                profit = (exit_price - self.entry_price) * self.leverage
-                percentual_profit = (
-                    ((exit_price - self.entry_price) / self.entry_price)
-                    * 100
-                    * self.leverage
-                )
-
-                self.cum_profit += percentual_profit
-                self.confirmatory_data.append(
-                    {
-                        "type": "tp",
-                        "entry_time": self.entry_time,
-                        "entry_price": self.entry_price,
-                        "exit_time": exit_time,
-                        "exit_price": exit_price,
-                        "percentual_difference": percentual_profit,
-                        "cumulative_profit": self.cum_profit,
-                    }
-                )
-
-                self.logger.info(
-                    f"PROFIT: Δabs: {profit}; Δ%: {percentual_profit}%; cumulative profit: {self.cum_profit}%"
-                )
+                self._register_trade_data("TP")
 
                 self._change_position()
                 self.entry_price = None
 
         else:
-            if self.strategy.entry_signal(self, self.data_window):
+            if self.strategy.entry_signal(self):
                 self.entry_price = self.data_window.close.values[-1]
                 self.entry_time = self.data_window.date.values[-1]
-                self.logger.info(f"ENTRY: E:{self.entry_price} at t:{self.entry_time}")
+                self.logger.info(
+                    f"ENTRY: E:{self.entry_price} at t:{self.entry_time}")
                 self._change_position()
+
+    def _set_current_profits(self):
+
+        self.last_price = self.data_window.close.values[-1]
+
+        self.current_profit = (
+            self.last_price
+            - self.entry_price
+            - 0.0002 * (self.last_price + self.entry_price)
+        )
+
+        self.current_percentual_profit = (
+            self.current_profit / self.entry_price) * 100
 
     def _start_position(self):
         """lembrar de settar/formatar quantity etc pro caso geral, com qualquer
@@ -415,7 +395,8 @@ class ATrader:
         if self.position["status"] == "FILLED":
             self.entry_price = float(self.position["avgPrice"])
             self.qty = self.position["executedQty"]
-            self.entry_time = to_datetime_tz(self.position["updateTime"], unit="ms")
+            self.entry_time = to_datetime_tz(
+                self.position["updateTime"], unit="ms")
 
     def _close_position(self):
         self.closing_order = self.client.futures_create_order(
@@ -430,15 +411,12 @@ class ATrader:
         )
         if self.closing_order["status"] == "FILLED":
             self.exit_price = float(self.closing_order["avgPrice"])
-            self.exit_time = to_datetime_tz(self.closing_order["updateTime"], unit="ms")
+            self.exit_time = to_datetime_tz(
+                self.closing_order["updateTime"], unit="ms")
 
     def _register_trade_data(self, tp_or_sl):
-        profit = (self.exit_price - self.entry_price) - 0.0002 * (
-            self.entry_price + self.exit_price
-        )
-        percentual_profit = (profit / self.entry_price) * 100 * self.leverage
 
-        self.cum_profit += percentual_profit
+        self.cum_profit += self.current_percentual_profit * self.leverage
         self.confirmatory_data.append(
             {
                 "type": f"{tp_or_sl}",
@@ -446,13 +424,14 @@ class ATrader:
                 "entry_price": self.entry_price,
                 "exit_time": self.exit_time,
                 "exit_price": self.exit_price,
-                "percentual_difference": percentual_profit,
+                "percentual_difference": self.current_percentual_profit,
+                "leveraged percentual_difference": self.current_percentual_profit * self.leverage,
                 "cumulative_profit": self.cum_profit,
             }
         )
 
         self.logger.info(
-            f"{tp_or_sl}: Δabs: {profit}; Δ%: {percentual_profit}%; cum_profit: {self.cum_profit}%"
+            f"{tp_or_sl}: Δabs: {self.current_profit}; leveraged Δ%: {self.current_percentual_profit *self.leverage}%; cum_profit: {self.cum_profit}%"
         )
 
     def live_plot(self):

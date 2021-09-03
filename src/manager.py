@@ -18,8 +18,7 @@ class Manager:
     def __init__(self, api_key, api_secret, rate=1):
         self.traders = {}
         self.client = Client(
-            api_key=api_key,
-            api_secret=api_secret,
+            api_key=api_key, api_secret=api_secret, exchange="binance.com-futures"
         )
         self.bwsm = BinanceWebSocketApiManager(
             output_default="UnicornFy", exchange="binance.com-futures"
