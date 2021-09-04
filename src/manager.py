@@ -12,6 +12,7 @@
 
 from src import *
 from src.atrader import ATrader
+from src.tradingview_handlers import ThreadedTAHandler
 
 
 class Manager:
@@ -34,11 +35,17 @@ class Manager:
         trader_name = name_trader(strategy, symbol)
 
         if trader_name not in self.get_traders():
-            trader = ATrader(self, strategy, symbol, leverage, is_real, qty)
+
+            handler = ThreadedTAHandler(
+                symbol, ["1m", "5m"], (60//self.rate)*5)
+            handler.start()
+            self.ta_handlers[trader_name] = handler
+
+            trader = ATrader(self, trader_name, strategy,
+                             symbol, leverage, is_real, qty)
             trader._start_new_stream()
             self.traders[trader.name] = trader
-            self.ta_handlers[trader.name] = ThreadedTAHandler(
-                symbol, ["1m", "5m"], rate//5)
+
             return trader
         else:
             print("Redundant trader. No new thread was created.\n")
@@ -48,7 +55,7 @@ class Manager:
         return list(self.traders.items())
 
     def get_ta_handlers(self):
-        return list(self.ta_traders.items())
+        return list(self.ta_handlers.items())
 
     def close_traders(self, traders=None):
         """

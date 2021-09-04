@@ -67,7 +67,7 @@ class TAStrategy:
     def entry_signal(self, trader):
 
         if (np.alltrue(trader.data_window.histogram.tail(self.entry_window) < 0)
-                and trader.ta_signal):
+                and trader.ta_handler.signal):
             return True
         else:
             return False

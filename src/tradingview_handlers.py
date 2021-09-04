@@ -12,6 +12,7 @@ class ThreadedTAHandler(threading.Thread):
         self.symbol = symbol
         self.tframes = tframes
         self.rate = rate
+        self.summary = []
         self.signal = False
         self.handlers = {}
         self.make_handlers()
@@ -23,7 +24,7 @@ class ThreadedTAHandler(threading.Thread):
         while self.keep_alive:
             self.check_signals()
             # self.signals.append(self.signal)
-            #print(self.signal)
+            #print(self.summary)
             time.sleep(self.rate)
 
     def stop(self):
@@ -42,28 +43,24 @@ class ThreadedTAHandler(threading.Thread):
             self.handlers[f"h_{tf}"] = h_tf
 
     def check_signals(self):
-
+        summary = []
+        signal = True
         for handler_key in self.handlers:
             handler = self.handlers[f"{handler_key}"]
             analysis_tf = handler.get_analysis()
-            recommendation = analysis_tf.summary["RECOMMENDATION"]
+            handler_summary = analysis_tf.summary
+            summary.append(handler_summary)
+            recommendation = handler_summary["RECOMMENDATION"]
             #print(analysis_tf.summary)
             if "BUY" not in recommendation:
                 self.signal = False
-            else:
-                self.signal = True
+                self.summary = summary
+                return
+        self.signal = signal
 
-    # def start_threaded_handler(self):
-    #
-    #     worker = threading.Thread(
-    #         target=self.check_signals,
-    #         args=(),
-    #     )
-    #     worker.setDaemon(True)
-    #     worker.start()
-    #
-    #     return worker
+
 # %%
-th = ThreadedTAHandler("bnbusdt", ["1m", "5m"], 5)
-th.start()
-th.isDaemon()
+# th = ThreadedTAHandler("bnbusdt", ["1m", "5m"], 5)
+# th.start()
+# th.isDaemon()
+# th.summaries

@@ -4,8 +4,9 @@ from unicorn_binance_rest_api.unicorn_binance_rest_api_exceptions import *
 
 
 class ATrader:
-    def __init__(self, manager, strategy, symbol, leverage, is_real, qty):
+    def __init__(self, manager, name, strategy, symbol, leverage, is_real, qty):
 
+        self.name = name
         self.manager = manager
         self.bwsm = manager.bwsm
         self.client = manager.client
@@ -13,8 +14,7 @@ class ATrader:
         self.symbol = symbol
         self.leverage = leverage
         self.is_real = is_real
-        self.ta_handlers = make_handlers(self.symbol, ["1m", "5m"])
-        self.check_signals = check_signals
+        self.ta_handler = self.manager.ta_handlers[self.name]
 
         if self.is_real:
             if self.symbol == "ethusdt" or self.symbol == "ETHUSDT":
@@ -47,7 +47,6 @@ class ATrader:
                     symbol=self.symbol, leverage=self.leverage
                 )
 
-        self.name = name_trader(strategy, self.symbol)
         # self.profits = []
         self.cum_profit = 0
         self.num_trades = 0
@@ -65,7 +64,8 @@ class ATrader:
         self.grabber = DataGrabber(self.client)
         self.data_window = self._get_initial_data_window()
         self.running_candles = []  # self.data_window.copy(deep=True)
-        self.ta_signal = self.check_signals(self.ta_handlers)
+        self.ta_signal = self.ta_handler.signal
+        self.ta_summary = self.ta_handler.summary
         # self.data = None
 
         self.start_time = time.time()  # wont change, used to compute uptime
@@ -279,8 +279,7 @@ class ATrader:
 
                             self.running_candles.append(dohlcv)
                             self.init_time = time.time()
-                            self.ta_signal = self.check_signals(
-                                self.ta_handlers)
+
                         else:
                             self.data_window.update(new_row)
 
@@ -337,6 +336,8 @@ class ATrader:
         1) mudar o sinal de entrada pra incluir as duas direçoes
         2) essa é a função que faz os trades, efetivamente. falta isso
         """
+        self.ta_signal = self.ta_handler.signal
+        self.ta_summary = self.ta_handler.summary
 
         if self.is_positioned:
 
@@ -363,7 +364,7 @@ class ATrader:
                 self.entry_price = self.data_window.close.values[-1]
                 self.entry_time = self.data_window.date.values[-1]
                 self.logger.info(
-                    f"ENTRY: E:{self.entry_price} at t:{self.entry_time}")
+                    f"ENTRY: E:{self.entry_price} at t:{self.entry_time}; signal: {self.ta_handler.signal}")
                 self._change_position()
 
     def _set_current_profits(self):
