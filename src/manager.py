@@ -16,14 +16,18 @@ from src.atrader import ATrader
 
 class Manager:
     def __init__(self, api_key, api_secret, rate=1):
-        self.traders = {}
+
         self.client = Client(
             api_key=api_key, api_secret=api_secret, exchange="binance.com-futures"
         )
         self.bwsm = BinanceWebSocketApiManager(
             output_default="UnicornFy", exchange="binance.com-futures"
         )
+
         self.rate = rate  # debbug purposes. will be removed
+
+        self.traders = {}
+        self.ta_handlers = {}
 
     def start_trader(self, strategy, symbol, leverage=1, is_real=False, qty=0.002):
 
@@ -33,6 +37,8 @@ class Manager:
             trader = ATrader(self, strategy, symbol, leverage, is_real, qty)
             trader._start_new_stream()
             self.traders[trader.name] = trader
+            self.ta_handlers[trader.name] = ThreadedTAHandler(
+                symbol, ["1m", "5m"], rate//5)
             return trader
         else:
             print("Redundant trader. No new thread was created.\n")
@@ -40,6 +46,9 @@ class Manager:
 
     def get_traders(self):
         return list(self.traders.items())
+
+    def get_ta_handlers(self):
+        return list(self.ta_traders.items())
 
     def close_traders(self, traders=None):
         """
@@ -49,6 +58,10 @@ class Manager:
             # fecha todos os traders
             for name, trader in self.get_traders():
                 trader.stop()
+            for name, handler in self.get_ta_handlers():
+                handler.stop()
+                del self.ta_handlers[name]
+
         else:
             # fecha só os passados como argumento
             pass
