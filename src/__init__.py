@@ -109,6 +109,23 @@ def strf_epoch(epochtime, fmt="%j-%y_%H-%M-%S"):
     return datetime.fromtimestamp(epochtime).strftime(fmt)
 
 
+def compute_exit(entry_price, target_profit, side, entry_fee=0.04, exit_fee=0.04):
+    """
+    LONG: side == "BUY" => exit_price > entry_price
+    SHORT: side == "SELL" => entry_price > exit_price
+
+    to compute stop loss set `target_profit` = stoploss and
+    use `side` contrary to your position
+    """
+    if side == "BUY":
+        exit_price = entry_price * \
+            (1 + target_profit/100 + entry_fee/100)/(1-exit_fee/100)
+    elif side == "SELL":
+        exit_price = entry_price * \
+            (1 - target_profit/100 - entry_fee/100)/(1 + exit_fee/100)
+    return exit_price
+
+
 def f_tp_price(price, tp, lev, precision=3, side="BUY"):
     if side == "BUY":
         return f"{(price * (1+(tp/lev)/100)):.2f}"

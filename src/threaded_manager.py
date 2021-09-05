@@ -11,11 +11,13 @@
 # %%
 
 from src import *
-from src.atrader import ATrader
+from src.threaded_atrader import ThreadedATrader
 from src.tradingview_handlers import ThreadedTAHandler
+import threading
+import time
 
 
-class Manager:
+class ThreadedManager:
     def __init__(self, api_key, api_secret, rate=1):
 
         self.client = Client(
@@ -30,6 +32,8 @@ class Manager:
         self.traders = {}
         self.ta_handlers = {}
 
+        self.is_monitoring = False
+
     def start_trader(self, strategy, symbol, leverage=1, is_real=False, qty=0.002):
 
         trader_name = name_trader(strategy, symbol)
@@ -38,12 +42,10 @@ class Manager:
 
             handler = ThreadedTAHandler(
                 symbol, ["1m", "5m"], (60//self.rate))
-            handler.start()
             self.ta_handlers[trader_name] = handler
-
-            trader = ATrader(self, trader_name, strategy,
+            
+            trader = ThreadedATrader(self, trader_name, strategy,
                              symbol, leverage, is_real, qty)
-            trader._start_new_stream()
             self.traders[trader.name] = trader
 
             return trader
@@ -108,3 +110,20 @@ class Manager:
         usar ML ou alguma API pra pegar sentiment analysis do mercado
         """
         pass
+
+    def _monitoring(self, sleep):
+        while self.is_monitoring:
+            self.pcheck()
+            time.sleep(sleep)
+
+    def start_monitoring(self, sleep=5):
+        self.is_monitoring = True
+        self.monitor = threading.Thread(
+            target=self._monitoring,
+            args=(sleep, ),
+        )
+        self.monitor.setDaemon(True)
+        self.monitor.start()
+    
+    def stop_monitoring(self):
+        self.is_monitoring = False
