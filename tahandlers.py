@@ -8,16 +8,15 @@ import numpy as np
 
 
 class ThreadedTAHandler(threading.Thread):
-    def __init__(self, symbol, tframes, rate):
+    def __init__(self, symbols, tframe, rate):
         threading.Thread.__init__(self)
-        self.symbol = symbol
-        self.tframes = tframes
+        self.symbols = symbols
+        self.tframe = tframe
         self.rate = rate
         self.summary = []
         self.signal = 0
         self.handlers = {}
         self.make_handlers()
-        #self.threaded_handler = self.start_threaded_handler()
         self.keep_alive = True
         self.daemon = True
         self.printing = False
@@ -28,7 +27,7 @@ class ThreadedTAHandler(threading.Thread):
             self.check_signals()
             if self.printing:
                 print(self.summary, self.signal)
-            time.sleep(self.rate)
+            time.sleep(60/self.rate)
 
     def stop(self):
         self.keep_alive = False
