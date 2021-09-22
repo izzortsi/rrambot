@@ -11,7 +11,7 @@ from bokeh.io import output_file, show
 from bokeh.models import *
 from bokeh.plotting import figure
 from bokeh.layouts import gridplot, column
-from new_srcs.grabber import DataGrabber
+from plots.grabber import DataGrabber
 
 
 # %%
@@ -50,9 +50,9 @@ class Dashboard:
         data_length = len(df)
         hover = HoverTool(
             tooltips=[
-                (" ", "@date{%m/%d %H:%M}"),
+                ("time", "@date{%m/%d %H:%M}"),
                 ("close", "$@{close}{%0.4f}"),  # use @{ } for field names with spaces
-                ("vol", "@volume{0.00 a}"),
+                ("volume", "@volume{0.00 a}"),
             ],
             formatters={
                 "@date": "datetime",  # use 'datetime' formatter for '@date' field
@@ -60,8 +60,6 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
-            show_arrow=False,
-            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["cprices"],
@@ -87,10 +85,7 @@ class Dashboard:
             ),
             active_scroll="wheel_zoom",
             y_range=cylims,
-            aspect_ratio=2.2,
-            match_aspect=True,
-            height_policy="fit",
-            # sizing_mode="fixed",
+            aspect_ratio=1.5,
         )
 
         cline = fig.line("date", "close", source=source, color="black", name="cprices")
@@ -157,8 +152,6 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
-            show_arrow=False,
-            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["hist_line"],
@@ -173,8 +166,6 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
-            show_arrow=False,
-            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["D1h_line"],
@@ -189,8 +180,6 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
-            show_arrow=False,
-            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["D2h_line"],
@@ -205,8 +194,6 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
-            show_arrow=False,
-            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["rsi_line"],
@@ -228,8 +215,6 @@ class Dashboard:
             ],
             active_scroll="wheel_zoom",
             x_range=fig.x_range,
-            # match_aspect=True,
-            height_policy="fit",
         )
         rsi_fig = figure(
             x_axis_type="datetime",
@@ -247,8 +232,6 @@ class Dashboard:
             ],
             active_scroll="wheel_zoom",
             x_range=fig.x_range,
-            # sizing_mode="fixed",
-            height_policy="fit",
         )
 
         hist_line = macd_fig.line(
@@ -301,7 +284,6 @@ class Dashboard:
             ],
             active_scroll="wheel_zoom",
             x_range=fig.x_range,
-            height_policy="fit",
         )
         D1h_line = D1h_fig.line(
             "date",
@@ -327,7 +309,6 @@ class Dashboard:
             ],
             active_scroll="wheel_zoom",
             x_range=fig.x_range,
-            height_policy="fit",
         )
         D2h_line = D2h_fig.line(
             "date",

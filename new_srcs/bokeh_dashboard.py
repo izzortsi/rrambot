@@ -11,19 +11,17 @@ from bokeh.io import output_file, show
 from bokeh.models import *
 from bokeh.plotting import figure
 from bokeh.layouts import gridplot, column
-from plots.grabber import DataGrabber
+from new_srcs.grabber import DataGrabber
 
 
 # %%
-global N
-N = 3
 
-data_params = {"symbol": "BNBUSDT", "timeframe": "15m", "fromdate": "6 day ago"}
+# data_params = {"symbol": "BNBUSDT", "timeframe": "15m", "fromdate": "6 day ago"}
 # symbol, timeframe, fromdate = data_params.values()
 
 
 class Dashboard:
-    def __init__(self, **kwargs):
+    def __init__(self, data_params):
 
         self.client = Client()
         self.dg = DataGrabber(self.client)
@@ -50,9 +48,9 @@ class Dashboard:
         data_length = len(df)
         hover = HoverTool(
             tooltips=[
-                ("time", "@date{%m/%d %H:%M}"),
+                (" ", "@date{%m/%d %H:%M}"),
                 ("close", "$@{close}{%0.4f}"),  # use @{ } for field names with spaces
-                ("volume", "@volume{0.00 a}"),
+                ("vol", "@volume{0.00 a}"),
             ],
             formatters={
                 "@date": "datetime",  # use 'datetime' formatter for '@date' field
@@ -60,6 +58,8 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
+            show_arrow=False,
+            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["cprices"],
@@ -69,7 +69,7 @@ class Dashboard:
             x_axis_type="datetime",
             title=f"{symbol}, {timeframe}, {fromdate}",
             plot_width=600,
-            plot_height=150,
+            plot_height=200,
             tools=[
                 "crosshair",
                 "pan",
@@ -85,7 +85,10 @@ class Dashboard:
             ),
             active_scroll="wheel_zoom",
             y_range=cylims,
-            aspect_ratio=1.5,
+            # aspect_ratio=2.2,
+            # match_aspect=True,
+            height_policy="max",
+            sizing_mode="fixed",
         )
 
         cline = fig.line("date", "close", source=source, color="black", name="cprices")
@@ -152,6 +155,8 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
+            show_arrow=False,
+            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["hist_line"],
@@ -166,6 +171,8 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
+            show_arrow=False,
+            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["D1h_line"],
@@ -180,6 +187,8 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
+            show_arrow=False,
+            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["D2h_line"],
@@ -194,6 +203,8 @@ class Dashboard:
                 # use default 'numeral' formatter for other fields
             },
             # display a tooltip whenever the cursor is vertically in line with a glyph
+            show_arrow=False,
+            point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
             names=["rsi_line"],
@@ -215,6 +226,8 @@ class Dashboard:
             ],
             active_scroll="wheel_zoom",
             x_range=fig.x_range,
+            sizing_mode="fixed",
+            height_policy="max",
         )
         rsi_fig = figure(
             x_axis_type="datetime",
@@ -232,15 +245,17 @@ class Dashboard:
             ],
             active_scroll="wheel_zoom",
             x_range=fig.x_range,
+            # sizing_mode="fixed",
+            height_policy="fixed",
         )
 
         hist_line = macd_fig.line(
             "date",
             "MACDh_12_26_9",
             source=source,
-            color="green",
+            color="black",
+            line_width=1.5,
             line_alpha=1.0,
-            line_dash="dashed",
             name="hist_line",
         )
         macd_line = macd_fig.line(
@@ -284,6 +299,7 @@ class Dashboard:
             ],
             active_scroll="wheel_zoom",
             x_range=fig.x_range,
+            height_policy="fixed",
         )
         D1h_line = D1h_fig.line(
             "date",
@@ -309,6 +325,7 @@ class Dashboard:
             ],
             active_scroll="wheel_zoom",
             x_range=fig.x_range,
+            height_policy="fixed",
         )
         D2h_line = D2h_fig.line(
             "date",
@@ -334,12 +351,4 @@ class Dashboard:
         return figs
 
 
-# %%
-
-# %%
-db = Dashboard(**data_params)
-# %%
-figs = db.bokeh_plot()
-# %%
-show(column(*figs))
 # %%

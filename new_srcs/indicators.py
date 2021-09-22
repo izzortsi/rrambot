@@ -28,7 +28,7 @@ def vwema(close, volume, length=None, offset=None, **kwargs):
 
     # Calculate Result
     pv = close * volume
-    vwema = ema(close=pv, length=length) / ema(close=volume, length=length)
+    vwema = sma(close=pv, length=length) / sma(close=volume, length=length)
 
     # Offset
     if offset != 0:
