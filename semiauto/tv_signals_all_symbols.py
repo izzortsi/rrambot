@@ -18,8 +18,31 @@ tv_symbols[1]
 # %%
 analysis = get_multiple_analysis(
     screener="crypto",
-    interval=Interval.INTERVAL_1_HOUR,
+    interval="1m",
     symbols=tv_symbols,
 )
 
-analysis
+# %%
+
+
+handler = TA_Handler(
+    symbol="BNBUSDTPERP",
+    exchange="binance",
+    screener="crypto",
+    interval="15m",
+    timeout=None,
+)
+
+
+# %%
+
+handler.get_analysis().summary
+
+# %%
+
+analysis["BINANCE:COTIUSDT"].interval
+analysis["BINANCE:COTIUSDT"].summary
+# %%
+from binance.helpers import *
+ 
+# %%

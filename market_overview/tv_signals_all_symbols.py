@@ -1,6 +1,4 @@
 # %%
-
-
 from tradingview_ta import *
 from src.symbols_formats import FORMATS
 

@@ -17,11 +17,11 @@ from new_srcs.bokeh_dashboard import *
 # %%
 
 
-data_params_30m = {"symbol": "BNBUSDT", "timeframe": "30m", "fromdate": "7 day ago"}
+data_params_30m = {"symbol": "SOLUSDT", "timeframe": "4h", "fromdate": "1 week ago"}
 db30m = Dashboard(data_params_30m)
 figs_30m = db30m.bokeh_plot()
 # %%
-data_params_4h = {"symbol": "BNBUSDT", "timeframe": "4h", "fromdate": "56 day ago"}
+data_params_4h = {"symbol": "SOLUSDT", "timeframe": "1d", "fromdate": "3 month ago"}
 db4h = Dashboard(data_params_4h)
 figs_4h = db4h.bokeh_plot()
 
