@@ -12,8 +12,12 @@ from bokeh.io import output_file, show
 from bokeh.models import *
 from bokeh.plotting import figure
 from bokeh.layouts import gridplot, column, grid, row
-from new_srcs.grabber import DataGrabber
-from new_srcs.bokeh_dashboard import *
+
+# from new_srcs.grabber import DataGrabber
+# from new_srcs.bokeh_dashboard import *
+from semiauto.grabber import DataGrabber
+from semiauto.auxs_functions import *
+from semiauto.bokeh_chart import GridChart
 
 # %%
 symbol = "COTIUSDT"
@@ -33,16 +37,20 @@ data_params_30m = {
     "timeframe": timeframes[0],
     "fromdate": "7 day ago",
 }
-db30m = Dashboard(data_params_30m)
+db30m = GridChart(data_params_30m)
 figs_30m = db30m.bokeh_plot()
+db30m.df[list(("MACD_12_26_9", "MACDh_12_26_9", "MACDs_12_26_9"))].max().max()
+db30m.df[list(("D1h",))].max().max()
 # %%
 data_params_4h = {
     "symbol": symbol,
     "timeframe": timeframes[1],
     "fromdate": "56 day ago",
 }
-db4h = Dashboard(data_params_4h)
+db4h = GridChart(data_params_4h)
 figs_4h = db4h.bokeh_plot()
 
 # %%
 show(gridplot([column(*figs_30m), column(*figs_4h)], ncols=2))
+
+# %%

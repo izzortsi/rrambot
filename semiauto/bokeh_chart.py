@@ -20,15 +20,15 @@ from semiauto.grabber import DataGrabber
 # symbol, timeframe, fromdate = data_params.values()
 
 
-class Dashboard:
+class GridChart:
     def __init__(self, data_params):
 
         self.client = Client()
         self.dg = DataGrabber(self.client)
 
-        ohlcv = self.dg.get_data(**data_params)
+        self.ohlcv = self.dg.get_data(**data_params)
 
-        self.df = self.dg.compute_indicators(ohlcv)
+        self.df = self.dg.compute_indicators(self.ohlcv)
         self.df.dropna(how="any", inplace=True)
 
         self.data_params = data_params
@@ -44,7 +44,8 @@ class Dashboard:
         df = self.df
         symbol, timeframe, fromdate = self.data_params.values()
         source = ColumnDataSource(data=df)
-        TOOLS = "crosshair, pan, wheel_zoom, box_zoom, reset, box_select, lasso_select"
+        # TOOLS = "crosshair, pan, wheel_zoom, box_zoom, reset, box_select, lasso_select"
+        TOOLS = "crosshair, xpan, xwheel_zoom, reset, save"
         data_length = len(df)
         hover = HoverTool(
             tooltips=[
@@ -64,31 +65,24 @@ class Dashboard:
             line_policy="nearest",
             names=["cprices"],
         )
-        cylims = (min(df.cinf), max(df.csup))
+        # cylims = (min(df.cinf), max(df.csup))
         fig = figure(
             x_axis_type="datetime",
             title=f"{symbol}, {timeframe}, {fromdate}",
             plot_width=600,
             plot_height=200,
-            tools=[
-                "crosshair",
-                "pan",
-                "box_zoom",
-                "wheel_zoom",
-                "save",
-                "reset",
-                hover,
-            ],
             x_range=(
                 df.index[data_length // 5],
                 df.index[3 * data_length // 5],
             ),
-            active_scroll="wheel_zoom",
-            y_range=cylims,
+            tools=TOOLS,
+            sizing_mode="stretch_both",
+            active_scroll="xwheel_zoom",
+            active_drag="xpan",
             # aspect_ratio=2.2,
             # match_aspect=True,
-            height_policy="max",
-            sizing_mode="fixed",
+            # height_policy="max",
+            # sizing_mode="fixed",
         )
 
         cline = fig.line("date", "close", source=source, color="black", name="cprices")
@@ -125,7 +119,7 @@ class Dashboard:
             title="Drag the middle and edges of the selection box to change the range above",
             plot_height=100,
             plot_width=600,
-            y_range=fig.y_range,
+            # y_range=fig.y_range,
             x_axis_type="datetime",
             y_axis_type=None,
             tools="",
@@ -193,10 +187,10 @@ class Dashboard:
             line_policy="nearest",
             names=["D2h_line"],
         )
-        rsi_hover = HoverTool(
+        mfi_hover = HoverTool(
             tooltips=[
                 ("time", "@date{%m/%d %H:%M}"),
-                ("rsi7", "@RSI_7"),
+                ("mfi14", "@MFI_14"),
             ],
             formatters={
                 "@date": "datetime",  # use 'datetime' formatter for '@date' field
@@ -207,7 +201,7 @@ class Dashboard:
             point_policy="snap_to_data",
             mode="vline",
             line_policy="nearest",
-            names=["rsi_line"],
+            names=["mfi_line"],
         )
 
         macd_fig = figure(
@@ -215,38 +209,26 @@ class Dashboard:
             title=f"{symbol}, {timeframe}, MACDH",
             plot_width=600,
             plot_height=150,
-            tools=[
-                "crosshair",
-                "pan",
-                "box_zoom",
-                "wheel_zoom",
-                "save",
-                "reset",
-                macd_hover,
-            ],
-            active_scroll="wheel_zoom",
+            tools=TOOLS,
+            # sizing_mode="stretch_both",
+            active_scroll="xwheel_zoom",
+            active_drag="xpan",
             x_range=fig.x_range,
-            sizing_mode="fixed",
+            sizing_mode="stretch_both",
             height_policy="max",
         )
-        rsi_fig = figure(
+        mfi_fig = figure(
             x_axis_type="datetime",
-            title=f"{symbol}, {timeframe}, RSI7",
+            title=f"{symbol}, {timeframe}, MFI14",
             plot_width=600,
             plot_height=150,
-            tools=[
-                "crosshair",
-                "pan",
-                "box_zoom",
-                "wheel_zoom",
-                "save",
-                "reset",
-                rsi_hover,
-            ],
-            active_scroll="wheel_zoom",
+            tools=TOOLS,
+            # sizing_mode="stretch_both",
+            active_scroll="xwheel_zoom",
+            active_drag="xpan",
             x_range=fig.x_range,
-            # sizing_mode="fixed",
-            height_policy="fixed",
+            sizing_mode="stretch_both",
+            height_policy="max",
         )
 
         hist_line = macd_fig.line(
@@ -274,13 +256,13 @@ class Dashboard:
             line_alpha=0.8,
             name="signal_line",
         )
-        rsi_line = rsi_fig.line(
+        mfi_line = mfi_fig.line(
             "date",
-            "RSI_7",
+            "MFI_14",
             source=source,
             color="green",
             line_alpha=1.0,
-            name="rsi_line",
+            name="mfi_line",
         )
 
         D1h_fig = figure(
@@ -288,18 +270,13 @@ class Dashboard:
             title=f"{symbol}, {timeframe}, 1st MACDh derivative",
             plot_width=600,
             plot_height=150,
-            tools=[
-                "crosshair",
-                "pan",
-                "box_zoom",
-                "wheel_zoom",
-                "save",
-                "reset",
-                d1h_hover,
-            ],
-            active_scroll="wheel_zoom",
+            tools=TOOLS,
+            # sizing_mode="stretch_both",
+            active_scroll="xwheel_zoom",
+            active_drag="xpan",
             x_range=fig.x_range,
-            height_policy="fixed",
+            sizing_mode="stretch_both",
+            height_policy="max",
         )
         D1h_line = D1h_fig.line(
             "date",
@@ -314,18 +291,13 @@ class Dashboard:
             title=f"{symbol}, {timeframe}, 2nd MACDh derivative",
             plot_width=600,
             plot_height=150,
-            tools=[
-                "crosshair",
-                "pan",
-                "box_zoom",
-                "wheel_zoom",
-                "save",
-                "reset",
-                d2h_hover,
-            ],
-            active_scroll="wheel_zoom",
+            tools=TOOLS,
+            # sizing_mode="stretch_both",
+            active_scroll="xwheel_zoom",
+            active_drag="xpan",
             x_range=fig.x_range,
-            height_policy="fixed",
+            sizing_mode="stretch_both",
+            height_policy="max",
         )
         D2h_line = D2h_fig.line(
             "date",
@@ -336,7 +308,63 @@ class Dashboard:
             name="D2h_line",
         )
 
-        figs = [fig, macd_fig, D1h_fig, D2h_fig, rsi_fig, select]
+        hlc_source = ColumnDataSource(
+            {"Index": self.df.index, "High": self.df.csup, "Low": self.df.cinf}
+        )
+
+        # ysize_source = ColumnDataSource(
+        #     {"Index": self.ohlcv.index, "High": self.ohlcv.high, "Low": self.ohlcv.low}
+        # )
+
+        callback = lambda fig, source: (
+            CustomJS(
+                args={"y_range": fig.y_range, "source": source},
+                code="""
+            clearTimeout(window._autoscale_timeout);
+
+            var Index = source.data.Index,
+                Low = source.data.Low,
+                High = source.data.High,
+                start = cb_obj.start,
+                end = cb_obj.end,
+                min = Infinity,
+                max = -Infinity;
+
+            for (var i=0; i < Index.length; ++i) {
+                if (start <= Index[i] && Index[i] <= end) {
+                    max = Math.max(High[i], max);
+                    min = Math.min(Low[i], min);
+                }
+            }
+            var pad = (max - min) * .05;
+
+            window._autoscale_timeout = setTimeout(function() {
+                y_range.start = min - pad;
+                y_range.end = max + pad;
+            });
+        """,
+            )
+        )
+
+        # Finalise the figure
+        fig.x_range.js_on_change("start", callback(fig, hlc_source))
+        select.x_range.js_on_change("start", callback(select, hlc_source))
+        figs = [fig, macd_fig, D1h_fig, D2h_fig, mfi_fig, select]
+        dict_figs = {
+            # ("csup", "cmed", "cinf", "close"): fig,
+            ("MACD_12_26_9", "MACDh_12_26_9", "MACDs_12_26_9"): macd_fig,
+            ("D1h",): D1h_fig,
+            ("D2h",): D2h_fig,
+            ("MFI_14",): mfi_fig,
+        }
+
+        # def set_figs_sources(dict_figs):
+        #     for k, v in dict_figs.items():
+        #         highs = self.df[list(v)].max().max()
+        #         lows = highs = self.df[list(v)].min().min()
+        #         fig_src = ColumnDataSource(
+        #             {"Index": self.df.index, "High": self.df.csup, "Low": self.df.cinf}
+        #         )
 
         def link_crosshairs(figs):
             crosshair = CrosshairTool(dimensions="both")

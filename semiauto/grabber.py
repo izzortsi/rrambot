@@ -2,7 +2,7 @@
 from binance.client import Client
 import pandas as pd
 import pandas_ta as ta
-from new_srcs import indicators
+from semiauto.indicators import *
 
 # %%
 
@@ -27,7 +27,7 @@ class DataGrabber:
         OHLCV = OHLCV.astype("float64")
         return OHLCV
 
-    def compute_indicators(self, ohlcv, N=5, indicators={}):
+    def compute_indicators(self, ohlcv, N=2, indicators={}):
 
         c = ohlcv["close"]
         h = ohlcv["high"]
@@ -43,22 +43,32 @@ class DataGrabber:
         ci = ta.vwema(l, v, length=N)
         ci.rename("cinf", inplace=True)
 
-        rsi = ta.rsi(c, length=7)
+        mfi = ta.mfi(h, l, c, v, length=14)
 
         macd = ta.macd(c)
-        macd_mean = macd.mean()
-        macd_std = macd.std()
 
-        macd = (macd - macd_mean) / macd_std
+        def normalize(series):
+            mean = series.mean()
+            stdev = series.std()
+            return (series - mean) / stdev
+
+        # macd_mean = macd.mean()
+        # macd_std = macd.std()
+
         macd_h = macd["MACDh_12_26_9"]
+
+        macd = normalize(macd)
+
+        print(macd_h.tail(3))
+        print(macd.tail(3))
 
         D1h = macd_h.shift(1) - macd_h
         D1h = D1h.rename("D1h")
-
+        D1h = normalize(D1h)
         D2h = D1h.shift(1) - D1h
         D2h = D2h.rename("D2h")
-
-        df = pd.concat([cs, ci, c, cm, v, macd, rsi, D1h, D2h], axis=1)
+        D2h = normalize(D2h)
+        df = pd.concat([cs, ci, c, cm, v, macd, mfi, D1h, D2h], axis=1)
 
         return df
 

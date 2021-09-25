@@ -2,7 +2,7 @@
 
 
 from tradingview_ta import *
-from src.symbols_formats import FORMATS
+from symbols_formats import FORMATS
 
 # %%
 symbols = FORMATS.keys()
