@@ -21,3 +21,6 @@ print(f"{depth}")
 # get all symbol prices
 prices = client.get_all_tickers()
 print(f"{prices}")
+
+
+# %%
