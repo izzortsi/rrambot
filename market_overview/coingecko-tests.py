@@ -1,6 +1,6 @@
 # %%
 import pandas as pd
-import pandas_ta
+import pandas_ta as ta
 import pandas_bokeh
 
 from pandas import DataFrame as df
@@ -40,6 +40,9 @@ cg = CoinGeckoAPI()
 # cg.get_price(ids="bitcoin,litecoin,ethereum", vs_currencies="usd")
 # OR (lists can be used for multiple-valued arguments)
 # and also optional parameters can be passed as defined in the API doc (https://www.coingecko.com/api/docs/v3)
+# %%
+
+
 data = cg.get_price(
     ids=["bitcoin", "litecoin", "ethereum"],
     vs_currencies="usd",
@@ -51,6 +54,17 @@ data = cg.get_price(
 
 
 datadf = df.from_dict(data)
+
+# %%
+
+datadf.loc["last_updated_at"] = pd.to_datetime(
+    datadf.loc["last_updated_at"], unit="s")
+# datadf.drop("last_updated_at", inplace=True)
+
+# %%
+
+
+# %%
 datadf
 
 
